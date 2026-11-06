@@ -221,6 +221,10 @@ textarea.truth-in{font-family:var(--font-truth);font-size:20px}
 .ed-nav{display:grid;grid-template-columns:1fr 2fr;gap:12px}
 .note{background:var(--accent-soft);padding:10px 14px;border-radius:12px;font-size:15px}
 .tools{display:flex;flex-wrap:wrap;gap:8px}
+.read-links{display:grid;gap:8px;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.read-h{display:flex;align-items:center;gap:6px;font:600 14px/1.3 var(--font-ui);color:var(--muted)}
+.read-h svg{width:18px;height:18px}
+.read-links .ref{font-size:15px;padding:10px 14px}
 .themes{border-top:1px solid var(--line)}
 .themes details{border-bottom:1px solid var(--line)}
 .themes summary{list-style:none;cursor:pointer;padding:13px 2px;font-weight:600;font-size:16px;display:flex;justify-content:space-between;gap:12px}
@@ -683,7 +687,7 @@ function viewAjustes() {
   h += '<section class="panel"><h2>Privacidad</h2><p class="muted">Lo que escribes queda guardado solo en este teléfono, dentro de la app. No se envía a ningún servidor. Tu consejero lo ve únicamente cuando tú se lo envías.</p></section>';
   h += '<section class="panel"><h2>Sobre este registro</h2><p class="muted">Sirve para renovar el entendimiento, reemplazando los pensamientos falsos por la verdad. Repítelo cada vez que el pensamiento vuelva: los caminos nuevos se fortalecen con la repetición.</p><div class="refs">' + refLinks('Romanos 12:2; 2 Corintios 10:5') + '</div></section>';
   h += '<button class="btn btn-ghost danger" data-action="wipe">Borrar todos los registros</button>';
-  h += '<p class="foot">Renovando Tu Mente 1.2</p>';
+  h += '<p class="foot">Renovando Tu Mente 1.3</p>';
   return h;
 }
 
@@ -747,7 +751,7 @@ function stepFields(s, d) {
   }
   if (s.n === 3) {
     return '<label class="fld" for="f-citas"><span>Pasajes</span><input id="f-citas" type="text" data-field="citas" placeholder="Ej.: Romanos 8:1; 2 Corintios 5:17" value="' + esc(d.citas) + '" autocomplete="off"></label>' +
-      '<div class="tools"><a id="read-link" class="btn btn-ghost btn-sm' + (splitRefs(d.citas).length ? '' : ' hidden') + '" ' + bibleAttrs(splitRefs(d.citas)[0] || '') + '>' + ICON.book + '<span>Leer en la Biblia</span></a></div>' +
+      '<div id="read-links" class="read-links' + (splitRefs(d.citas).length ? '' : ' hidden') + '"><p class="read-h">' + ICON.book + '<span>Leer en la Biblia (toca cada pasaje)</span></p><div class="refs">' + refLinks(d.citas) + '</div></div>' +
       '<label class="fld" for="f-palabra"><span>Lo que dice</span></label>' + fieldTA(s, d).replace('<label class="sr-only" for="f-palabra">' + esc(s.title) + '</label>', '') +
       themesHTML(d);
   }
@@ -808,10 +812,10 @@ function addRef(ref) {
   updateReadLink();
 }
 function updateReadLink() {
-  const a = $('#read-link'); if (!a) return;
+  const box = $('#read-links'); if (!box) return;
   const refs = splitRefs(state.editor.data.citas);
-  a.classList.toggle('hidden', !refs.length);
-  a.href = webUrl(refs[0] || ''); a.dataset.bible = refs[0] || '';
+  box.classList.toggle('hidden', !refs.length);
+  box.querySelector('.refs').innerHTML = refLinks(state.editor.data.citas);
 }
 
 /* ---------- modal y aviso breve ---------- */
