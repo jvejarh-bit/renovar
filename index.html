@@ -363,9 +363,16 @@ const standalone = window.navigator.standalone === true || (window.matchMedia &&
 
 let entries = load(K_ENTRIES, []);
 if (!Array.isArray(entries)) entries = [];
+/* Datos del consejero que vienen cargados para todos. Cada persona puede cambiarlos en Ajustes. */
+const CONSEJERO = { nombre: '', tel: '' };
+
 let settings = Object.assign({ nombre: '', consejeroNombre: '', consejeroTel: '', version: 'NBLA', lastSent: null, lastBackup: null, installHidden: false }, load(K_SETTINGS, {}) || {});
 // La versión 1.0 venía con Reina-Valera 1960 por defecto: quien no eligió otra a propósito pasa a la NBLA.
 if (!settings.versionElegida && settings.version !== 'NBLA') { settings.version = 'NBLA'; save(K_SETTINGS, settings); }
+// Si la persona no ha tocado los datos de su consejero, se usan los que vienen cargados.
+if (!settings.consejeroEditado && (CONSEJERO.nombre || CONSEJERO.tel) && (settings.consejeroNombre !== CONSEJERO.nombre || settings.consejeroTel !== CONSEJERO.tel)) {
+  settings.consejeroNombre = CONSEJERO.nombre; settings.consejeroTel = CONSEJERO.tel; save(K_SETTINGS, settings);
+}
 
 const TABS = ['registros', 'verdades', 'enviar', 'ajustes'];
 const state = { tab: 'registros', view: 'tab', id: null, q: '', range: settings.lastSent ? 'ultimo' : '7', editor: null };
@@ -603,6 +610,7 @@ function viewAjustes() {
   let h = '<header class="top"><p class="eyebrow">Renovando Tu Mente</p><h1>Ajustes y ayuda</h1></header>';
   h += '<section class="panel urgent" id="ayuda"><h2>Ayuda urgente</h2>' + helpHTML() + '</section>';
   h += '<section class="panel"><h2>Tus datos</h2>' +
+    '<p class="muted">Tu nombre y el de tu consejero aparecen al comienzo del mensaje que le envías desde «Enviar», para que sepa de quién es cada registro. El teléfono de tu consejero queda a un toque en «Ayuda urgente». La versión de la Biblia es la que se abre al tocar un pasaje. ' + ((CONSEJERO.nombre || CONSEJERO.tel) ? 'Los datos de tu consejero vienen cargados; puedes cambiarlos si lo necesitas. ' : '') + 'Todo queda guardado solo en este teléfono.</p>' +
     '<label class="fld" for="s-nombre"><span>Tu nombre</span><input id="s-nombre" type="text" data-setting="nombre" autocomplete="name" value="' + esc(settings.nombre) + '"></label>' +
     '<label class="fld" for="s-cn"><span>Nombre de tu consejero</span><input id="s-cn" type="text" data-setting="consejeroNombre" value="' + esc(settings.consejeroNombre) + '"></label>' +
     '<label class="fld" for="s-ct"><span>Teléfono de tu consejero (opcional)</span><input id="s-ct" type="tel" data-setting="consejeroTel" inputmode="tel" value="' + esc(settings.consejeroTel) + '"></label>' +
@@ -907,7 +915,9 @@ document.addEventListener('input', ev => {
     return;
   }
   if (t.dataset.setting) {
-    settings[t.dataset.setting] = t.value; saveSettings();
+    settings[t.dataset.setting] = t.value;
+    if (t.dataset.setting === 'consejeroNombre' || t.dataset.setting === 'consejeroTel') settings.consejeroEditado = true;
+    saveSettings();
     const r = $('#report'); if (r) r.textContent = buildReport(state.range);
     return;
   }
