@@ -473,7 +473,9 @@ function appUrl(ref) {
   const p = parseRef(ref); if (!p) return null;
   let refs = p.libro + '.' + p.cap;
   if (p.v1) { const vs = []; for (let v = p.v1; v <= (p.v2 || p.v1) && vs.length < 60; v++) vs.push(p.libro + '.' + p.cap + '.' + v); refs = vs.join('+'); }
-  return 'youversion://bible?reference=' + refs;
+  // La versión va con su abreviatura y con su número: la app Biblia usa la que reconozca e ignora la otra.
+  const ver = versionActual();
+  return 'youversion://bible?reference=' + refs + '&version=' + ver[0] + '&version_id=' + ver[2];
 }
 // Enlace a la app: en Android con «intent», que abre bible.com solo si la app no está instalada.
 function appHref(ref) {
@@ -687,8 +689,8 @@ function viewAjustes() {
     '<label class="fld" for="s-cn"><span>Nombre de tu consejero</span><input id="s-cn" type="text" data-setting="consejeroNombre" value="' + esc(settings.consejeroNombre) + '"></label>' +
     '<label class="fld" for="s-ct"><span>Teléfono de tu consejero (opcional)</span><input id="s-ct" type="tel" data-setting="consejeroTel" inputmode="tel" value="' + esc(settings.consejeroTel) + '"></label>' +
     '<label class="fld" for="s-b"><span>Abrir los pasajes en</span><select id="s-b" data-setting="biblia">' + [['app', 'La app Biblia (YouVersion)'], ['web', 'bible.com']].map(([v, l]) => '<option value="' + v + '"' + (settings.biblia === v ? ' selected' : '') + '>' + esc(l) + '</option>').join('') + '</select></label>' +
-    '<label class="fld" for="s-v"><span>Versión de la Biblia en bible.com</span><select id="s-v" data-setting="version">' + VERSIONES.map(([v, l]) => '<option value="' + v + '"' + (settings.version === v ? ' selected' : '') + '>' + esc(l) + '</option>').join('') + '</select></label>' +
-    '<p class="help-sm">En la app Biblia, el pasaje se abre en la versión que tengas elegida dentro de esa app.</p></section>';
+    '<label class="fld" for="s-v"><span>Versión de la Biblia</span><select id="s-v" data-setting="version">' + VERSIONES.map(([v, l]) => '<option value="' + v + '"' + (settings.version === v ? ' selected' : '') + '>' + esc(l) + '</option>').join('') + '</select></label>' +
+    '<p class="help-sm">Se usa al abrir los pasajes en la app Biblia y en bible.com.</p></section>';
   h += '<section class="panel"><h2>Copia de seguridad</h2><p class="muted">Tus registros se guardan solo en este teléfono. Si borras la app o cambias de teléfono, se pierden. Guarda una copia de vez en cuando (por ejemplo, en Archivos o enviándotela por correo).</p>' +
     '<div class="stack"><button class="btn btn-ghost" data-action="backup">Guardar copia de seguridad</button>' +
     '<label class="btn btn-ghost" for="restore-file">Restaurar desde una copia</label><input id="restore-file" class="sr-only" type="file" accept="application/json,.json"></div>' +
@@ -699,7 +701,7 @@ function viewAjustes() {
   h += '<section class="panel"><h2>Privacidad</h2><p class="muted">Lo que escribes queda guardado solo en este teléfono, dentro de la app. No se envía a ningún servidor. Tu consejero lo ve únicamente cuando tú se lo envías.</p></section>';
   h += '<section class="panel"><h2>Sobre este registro</h2><p class="muted">Sirve para renovar el entendimiento, reemplazando los pensamientos falsos por la verdad. Repítelo cada vez que el pensamiento vuelva: los caminos nuevos se fortalecen con la repetición.</p><div class="refs">' + refLinks('Romanos 12:2; 2 Corintios 10:5') + '</div></section>';
   h += '<button class="btn btn-ghost danger" data-action="wipe">Borrar todos los registros</button>';
-  h += '<p class="foot">Renovando Tu Mente 1.5</p>';
+  h += '<p class="foot">Renovando Tu Mente 1.6</p>';
   return h;
 }
 
