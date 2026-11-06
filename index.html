@@ -474,7 +474,18 @@ function appUrl(ref) {
   if (p.v1) { const vs = []; for (let v = p.v1; v <= (p.v2 || p.v1) && vs.length < 60; v++) vs.push(p.libro + '.' + p.cap + '.' + v); refs = vs.join('+'); }
   return 'youversion://bible?reference=' + refs;
 }
-function bibleAttrs(ref) { return 'href="' + esc(webUrl(ref)) + '" data-bible="' + esc(ref) + '" target="_blank" rel="noopener"'; }
+// Enlace a la app: en Android con «intent», que abre bible.com solo si la app no está instalada.
+function appHref(ref) {
+  const app = appUrl(ref); if (!app) return null;
+  if (/Android/i.test(navigator.userAgent)) return 'intent://' + app.replace('youversion://', '') + '#Intent;scheme=youversion;package=com.sirma.mobile.bible.android;S.browser_fallback_url=' + encodeURIComponent(webUrl(ref)) + ';end';
+  return app;
+}
+function usarApp(ref) { return settings.biblia === 'app' && !inFrame && (isIOS || /Android/i.test(navigator.userAgent)) && !!appUrl(ref); }
+// Si la persona eligió la app, el enlace va directo a la app y sin target: así el iPhone no abre una ventana en blanco.
+function bibleAttrs(ref) {
+  if (usarApp(ref)) return 'href="' + esc(appHref(ref)) + '" data-bible="' + esc(ref) + '"';
+  return 'href="' + esc(webUrl(ref)) + '" data-bible="' + esc(ref) + '" target="_blank" rel="noopener"';
+}
 function refLinks(s) { return splitRefs(s).map(r => '<a class="ref" ' + bibleAttrs(r) + '>' + esc(r) + '</a>').join(''); }
 
 /* ---------- vistas ---------- */
@@ -687,7 +698,7 @@ function viewAjustes() {
   h += '<section class="panel"><h2>Privacidad</h2><p class="muted">Lo que escribes queda guardado solo en este teléfono, dentro de la app. No se envía a ningún servidor. Tu consejero lo ve únicamente cuando tú se lo envías.</p></section>';
   h += '<section class="panel"><h2>Sobre este registro</h2><p class="muted">Sirve para renovar el entendimiento, reemplazando los pensamientos falsos por la verdad. Repítelo cada vez que el pensamiento vuelva: los caminos nuevos se fortalecen con la repetición.</p><div class="refs">' + refLinks('Romanos 12:2; 2 Corintios 10:5') + '</div></section>';
   h += '<button class="btn btn-ghost danger" data-action="wipe">Borrar todos los registros</button>';
-  h += '<p class="foot">Renovando Tu Mente 1.3</p>';
+  h += '<p class="foot">Renovando Tu Mente 1.4</p>';
   return h;
 }
 
@@ -824,7 +835,9 @@ function modal(title, bodyHTML, actions) {
   return new Promise(res => {
     modalResolve = res;
     $('#modal').innerHTML = '<div class="modal-bg" data-modal="__bg"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-h"><h2 id="m-h">' + esc(title) + '</h2>' + bodyHTML +
-      '<div class="stack">' + actions.map(a => '<button class="btn ' + (a.cls || 'btn-ghost') + '" data-modal="' + a.key + '">' + esc(a.label) + '</button>').join('') + '</div></div></div>';
+      '<div class="stack">' + actions.map(a => a.href
+        ? '<a class="btn ' + (a.cls || 'btn-ghost') + '" data-modal="' + a.key + '" href="' + esc(a.href) + '"' + (a.blank ? ' target="_blank" rel="noopener"' : '') + '>' + esc(a.label) + '</a>'
+        : '<button class="btn ' + (a.cls || 'btn-ghost') + '" data-modal="' + a.key + '">' + esc(a.label) + '</button>').join('') + '</div></div></div>';
     const first = $('#modal [data-modal]:not(.modal-bg)'); if (first) first.focus();
   });
 }
@@ -900,48 +913,42 @@ function restoreFrom(text) {
 
 /* ---------- abrir pasajes: app Biblia (YouVersion) o bible.com ---------- */
 const isAndroid = /Android/i.test(navigator.userAgent);
-function openWeb(url) {
-  const w = window.open(url, '_blank');
-  if (w) { try { w.opener = null; } catch (e) {} } else { location.href = url; }
-}
-function openInApp(ref) {
-  const app = appUrl(ref), web = webUrl(ref);
-  if (!app) { openWeb(web); return; }
-  if (isAndroid) {
-    // Android abre la app y, si no está instalada, el propio sistema abre bible.com.
-    location.href = 'intent://' + app.replace('youversion://', '') + '#Intent;scheme=youversion;package=com.sirma.mobile.bible.android;S.browser_fallback_url=' + encodeURIComponent(web) + ';end';
-    return;
-  }
-  // iPhone: si la app se abre, esta página pasa a segundo plano. Si no pasa nada, se abre bible.com.
-  let salio = false;
+function refreshBibleLinks() { if (state.editor) updateReadLink(); else render(); }
+// iPhone: si la app se abre, esta página pasa a segundo plano (o se congela y el reloj llega tarde).
+// Si a los 2,5 s sigue a la vista, la app no respondió: se ofrece bible.com con un botón (sin abrir nada solo).
+function vigilarApp(ref) {
+  if (!isIOS) return;
+  let salio = false; const t0 = Date.now();
   const marcar = () => { salio = true; };
   const vis = () => { if (document.hidden) salio = true; };
   document.addEventListener('visibilitychange', vis);
   window.addEventListener('pagehide', marcar);
   window.addEventListener('blur', marcar);
-  location.href = app;
-  setTimeout(() => {
+  setTimeout(async () => {
     document.removeEventListener('visibilitychange', vis);
     window.removeEventListener('pagehide', marcar);
     window.removeEventListener('blur', marcar);
-    if (salio || document.hidden) return;
-    settings.biblia = 'web'; saveSettings();
-    toast('No encontramos la app Biblia, así que abrimos bible.com. Si la instalas, cámbialo en Ajustes.');
-    openWeb(web);
-  }, 1800);
+    if (salio || document.hidden || Date.now() - t0 > 4000) return;
+    const k = await modal('No se abrió la app Biblia', '<p class="muted">Puede que no esté instalada en este teléfono. Puedes leer el pasaje en bible.com.</p>',
+      [{ key: 'web', label: 'Abrir en bible.com', cls: 'btn-primary', href: webUrl(ref), blank: true }, { key: 'no', label: 'Cerrar' }]);
+    if (k === 'web') { settings.biblia = 'web'; saveSettings(); refreshBibleLinks(); toast('Desde ahora los pasajes se abren en bible.com. Puedes cambiarlo en Ajustes.'); }
+  }, 2500);
 }
 async function openBible(ref, ev) {
   if (!ref) return;
   const movil = isIOS || isAndroid;
-  if (!movil || inFrame) return; // computador o vista previa: el enlace normal abre bible.com
+  if (!movil || inFrame || settings.biblia === 'web') return; // el enlace normal abre bible.com
+  if (settings.biblia === 'app') { if (appUrl(ref)) vigilarApp(ref); return; } // el enlace ya va directo a la app
+  // Primera vez: se pregunta. Cada respuesta es un enlace de verdad, para que el teléfono lo abra sin ventanas extra.
   ev.preventDefault();
-  if (settings.biblia === 'web') { openWeb(webUrl(ref)); return; }
-  if (settings.biblia === 'app') { openInApp(ref); return; }
+  const app = appHref(ref);
   const k = await modal('¿Tienes la app Biblia?', '<p class="muted">Si tienes instalada la app Biblia (YouVersion), los pasajes se abren ahí. Si no, se abren en bible.com. Te lo preguntamos solo esta vez; puedes cambiarlo en Ajustes.</p>',
-    [{ key: 'app', label: 'Sí, abrir en la app Biblia', cls: 'btn-primary' }, { key: 'web', label: 'No, abrir en bible.com' }]);
+    [app ? { key: 'app', label: 'Sí, abrir en la app Biblia', cls: 'btn-primary', href: app } : { key: 'app', label: 'Sí, usar la app Biblia', cls: 'btn-primary' },
+     { key: 'web', label: 'No, abrir en bible.com', href: webUrl(ref), blank: true }]);
   if (k !== 'app' && k !== 'web') return;
   settings.biblia = k; saveSettings();
-  if (k === 'app') openInApp(ref); else openWeb(webUrl(ref));
+  refreshBibleLinks();
+  if (k === 'app' && app) vigilarApp(ref);
 }
 
 /* ---------- navegación ---------- */
@@ -955,7 +962,12 @@ window.addEventListener('hashchange', () => { const h = location.hash.slice(1); 
 
 document.addEventListener('click', async ev => {
   const m = ev.target.closest('[data-modal]');
-  if (m) { if (m.dataset.modal === '__bg' && ev.target !== m) return; closeModal(m.dataset.modal); return; }
+  if (m) {
+    if (m.dataset.modal === '__bg' && ev.target !== m) return;
+    // Un botón-enlace sigue su enlace; el aviso se cierra justo después.
+    if (m.tagName === 'A') { const key = m.dataset.modal; setTimeout(() => closeModal(key), 0); return; }
+    closeModal(m.dataset.modal); return;
+  }
   const bl = ev.target.closest('a[data-bible]');
   if (bl) { openBible(bl.dataset.bible, ev); return; }
   const tabA = ev.target.closest('.tabbar a');
