@@ -1,6 +1,6 @@
 /* Renovando Tu Mente: guarda la app en el teléfono para que funcione sin internet.
    Al cambiar algún archivo, sube el número de CACHE para que los teléfonos tomen la versión nueva. */
-const CACHE = 'renovar-v2';
+const CACHE = 'renovar-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -32,7 +32,7 @@ self.addEventListener('fetch', event => {
   // La página: primero la red (para recibir actualizaciones), si no hay conexión, la copia guardada.
   if (req.mode === 'navigate') {
     event.respondWith(
-      fetch(req)
+      fetch(req, { cache: 'no-cache' })
         .then(res => { const copy = res.clone(); caches.open(CACHE).then(c => c.put('./index.html', copy)); return res; })
         .catch(() => caches.match('./index.html'))
     );
