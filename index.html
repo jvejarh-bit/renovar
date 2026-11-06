@@ -326,7 +326,35 @@ const EJEMPLO = {
   verdad: 'Mi valor no depende de lo que opine mi jefa. En Cristo soy aceptado, y puedo preguntarle con calma qué mejorar.'
 };
 
-const VERSIONES = [['NBLA', 'Nueva Biblia de las Américas'], ['RVR1960', 'Reina-Valera 1960'], ['NVI', 'Nueva Versión Internacional'], ['LBLA', 'La Biblia de las Américas'], ['NTV', 'Nueva Traducción Viviente'], ['DHH', 'Dios Habla Hoy']];
+// [abreviatura, nombre, número de la versión en bible.com / YouVersion]
+const VERSIONES = [['NBLA', 'Nueva Biblia de las Américas', 103], ['RVR1960', 'Reina-Valera 1960', 149], ['NVI', 'Nueva Versión Internacional', 128], ['LBLA', 'La Biblia de las Américas', 89], ['NTV', 'Nueva Traducción Viviente', 127]];
+
+// Libros de la Biblia: nombres y abreviaturas en español → código que usa YouVersion (USFM).
+const LIBROS = (function () {
+  const L = {
+    GEN: 'genesis gn gen', EXO: 'exodo ex exo', LEV: 'levitico lv lev', NUM: 'numeros nm num', DEU: 'deuteronomio dt deut deu',
+    JOS: 'josue jos', JDG: 'jueces jue jc', RUT: 'rut rt', '1SA': '1 samuel 1 s 1 sam 1 sm', '2SA': '2 samuel 2 s 2 sam 2 sm',
+    '1KI': '1 reyes 1 r 1 re 1 rey', '2KI': '2 reyes 2 r 2 re 2 rey', '1CH': '1 cronicas 1 cr 1 cro', '2CH': '2 cronicas 2 cr 2 cro',
+    EZR: 'esdras esd', NEH: 'nehemias neh', EST: 'ester est', JOB: 'job jb', PSA: 'salmos salmo sal sl', PRO: 'proverbios pr prov',
+    ECC: 'eclesiastes ec ecl', SNG: 'cantares cantar de los cantares cantico de los canticos cnt cant ct', ISA: 'isaias is isa',
+    JER: 'jeremias jer jr', LAM: 'lamentaciones lm lam', EZK: 'ezequiel ez eze', DAN: 'daniel dn dan', HOS: 'oseas os',
+    JOL: 'joel jl', AMO: 'amos am', OBA: 'abdias abd', JON: 'jonas jon', MIC: 'miqueas mi miq', NAM: 'nahum nah',
+    HAB: 'habacuc hab', ZEP: 'sofonias sof', HAG: 'hageo hag', ZEC: 'zacarias zac', MAL: 'malaquias mal',
+    MAT: 'mateo mt mat', MRK: 'marcos mc mr mar', LUK: 'lucas lc luc', JHN: 'juan jn', ACT: 'hechos hch hech',
+    ROM: 'romanos ro rom', '1CO': '1 corintios 1 co 1 cor', '2CO': '2 corintios 2 co 2 cor', GAL: 'galatas ga gal',
+    EPH: 'efesios ef', PHP: 'filipenses fil flp', COL: 'colosenses col', '1TH': '1 tesalonicenses 1 ts 1 tes',
+    '2TH': '2 tesalonicenses 2 ts 2 tes', '1TI': '1 timoteo 1 ti 1 tim', '2TI': '2 timoteo 2 ti 2 tim', TIT: 'tito tit',
+    PHM: 'filemon flm', HEB: 'hebreos heb', JAS: 'santiago stg sant', '1PE': '1 pedro 1 p 1 pe 1 ped', '2PE': '2 pedro 2 p 2 pe 2 ped',
+    '1JN': '1 juan 1 jn', '2JN': '2 juan 2 jn', '3JN': '3 juan 3 jn', JUD: 'judas jud', REV: 'apocalipsis ap apoc'
+  };
+  const map = {};
+  Object.keys(L).forEach(code => {
+    // Cada nombre puede tener varias palabras ("1 samuel", "cantar de los cantares"): se separan por los dobles espacios lógicos de abajo.
+    const parts = L[code].match(/(?:[123] )?(?:cantar de los cantares|cantico de los canticos|[a-z]+)/g);
+    parts.forEach(n => { map[n] = code; map[n.replace(' ', '')] = code; });
+  });
+  return map;
+})();
 
 const ICON = {
   plus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
@@ -369,6 +397,8 @@ const CONSEJERO = { nombre: 'Javier Véjar H.', tel: '+56 9 4645 6871' };
 let settings = Object.assign({ nombre: '', consejeroNombre: '', consejeroTel: '', version: 'NBLA', lastSent: null, lastBackup: null, installHidden: false }, load(K_SETTINGS, {}) || {});
 // La versión 1.0 venía con Reina-Valera 1960 por defecto: quien no eligió otra a propósito pasa a la NBLA.
 if (!settings.versionElegida && settings.version !== 'NBLA') { settings.version = 'NBLA'; save(K_SETTINGS, settings); }
+if (!VERSIONES.some(v => v[0] === settings.version)) { settings.version = 'NBLA'; save(K_SETTINGS, settings); }
+if (!['preguntar', 'app', 'web'].includes(settings.biblia)) settings.biblia = 'preguntar';
 // Si la persona no ha tocado los datos de su consejero, se usan los que vienen cargados.
 if (!settings.consejeroEditado && (CONSEJERO.nombre || CONSEJERO.tel) && (settings.consejeroNombre !== CONSEJERO.nombre || settings.consejeroTel !== CONSEJERO.tel)) {
   settings.consejeroNombre = CONSEJERO.nombre; settings.consejeroTel = CONSEJERO.tel; save(K_SETTINGS, settings);
@@ -414,8 +444,34 @@ function toLocalInput(iso) { const d = iso ? new Date(iso) : new Date(); return 
 function fromLocalInput(v) { const d = new Date(v); return isNaN(d) ? new Date().toISOString() : d.toISOString(); }
 
 function splitRefs(s) { return String(s || '').split(';').map(x => x.trim()).filter(Boolean); }
-function bibleUrl(ref) { return 'https://www.biblegateway.com/passage/?search=' + encodeURIComponent(ref) + '&version=' + encodeURIComponent(settings.version || 'NBLA'); }
-function refLinks(s) { return splitRefs(s).map(r => '<a class="ref" href="' + esc(bibleUrl(r)) + '" target="_blank" rel="noopener">' + esc(r) + '</a>').join(''); }
+// Convierte «Romanos 8:28-29, 31» en { libro: 'ROM', cap: 8, v1: 28, v2: 29 }. Devuelve null si no lo reconoce.
+function parseRef(ref) {
+  const r = norm(ref).replace(/([a-z])\./g, '$1').replace(/[–—]/g, '-').replace(/\s+/g, ' ').trim();
+  const m = r.match(/^((?:[123]\s?)?[a-z]+(?: de los [a-z]+)?)\s*(\d+)(?:\s*[:.]\s*(\d+)(?:\s*-\s*(\d+))?)?/);
+  if (!m) return null;
+  const nombre = m[1].replace(/^([123])\s?/, '$1 ');
+  const libro = LIBROS[nombre] || LIBROS[nombre.replace(' ', '')];
+  if (!libro) return null;
+  const cap = +m[2], v1 = m[3] ? +m[3] : null, v2 = m[4] && m[3] ? +m[4] : null;
+  return { libro: libro, cap: cap, v1: v1, v2: v2 && v2 > v1 ? v2 : null };
+}
+function versionActual() { return VERSIONES.find(v => v[0] === settings.version) || VERSIONES[0]; }
+// Enlace a bible.com en español, en la versión elegida.
+function webUrl(ref) {
+  const p = parseRef(ref), ver = versionActual();
+  if (!p) return 'https://www.bible.com/es/search/bible?q=' + encodeURIComponent(ref) + '&version_id=' + ver[2];
+  const pasaje = p.libro + '.' + p.cap + (p.v1 ? '.' + p.v1 + (p.v2 ? '-' + p.v2 : '') : '');
+  return 'https://www.bible.com/es/bible/' + ver[2] + '/' + pasaje + '.' + ver[0];
+}
+// Enlace que abre la app Biblia (YouVersion) en el pasaje.
+function appUrl(ref) {
+  const p = parseRef(ref); if (!p) return null;
+  let refs = p.libro + '.' + p.cap;
+  if (p.v1) { const vs = []; for (let v = p.v1; v <= (p.v2 || p.v1) && vs.length < 60; v++) vs.push(p.libro + '.' + p.cap + '.' + v); refs = vs.join('+'); }
+  return 'youversion://bible?reference=' + refs;
+}
+function bibleAttrs(ref) { return 'href="' + esc(webUrl(ref)) + '" data-bible="' + esc(ref) + '" target="_blank" rel="noopener"'; }
+function refLinks(s) { return splitRefs(s).map(r => '<a class="ref" ' + bibleAttrs(r) + '>' + esc(r) + '</a>').join(''); }
 
 /* ---------- vistas ---------- */
 function banners() {
@@ -610,11 +666,13 @@ function viewAjustes() {
   let h = '<header class="top"><p class="eyebrow">Renovando Tu Mente</p><h1>Ajustes y ayuda</h1></header>';
   h += '<section class="panel urgent" id="ayuda"><h2>Ayuda urgente</h2>' + helpHTML() + '</section>';
   h += '<section class="panel"><h2>Tus datos</h2>' +
-    '<p class="muted">Tu nombre y el de tu consejero aparecen al comienzo del mensaje que le envías desde «Enviar», para que sepa de quién es cada registro. El teléfono de tu consejero queda a un toque en «Ayuda urgente». La versión de la Biblia es la que se abre al tocar un pasaje. ' + ((CONSEJERO.nombre || CONSEJERO.tel) ? 'Los datos de tu consejero vienen cargados; puedes cambiarlos si lo necesitas. ' : '') + 'Todo queda guardado solo en este teléfono.</p>' +
+    '<p class="muted">Tu nombre y el de tu consejero aparecen al comienzo del mensaje que le envías desde «Enviar», para que sepa de quién es cada registro. El teléfono de tu consejero queda a un toque en «Ayuda urgente». Al tocar un pasaje se abre en la app Biblia (YouVersion) o en bible.com, según lo que elijas abajo. ' + ((CONSEJERO.nombre || CONSEJERO.tel) ? 'Los datos de tu consejero vienen cargados; puedes cambiarlos si lo necesitas. ' : '') + 'Todo queda guardado solo en este teléfono.</p>' +
     '<label class="fld" for="s-nombre"><span>Tu nombre</span><input id="s-nombre" type="text" data-setting="nombre" autocomplete="name" value="' + esc(settings.nombre) + '"></label>' +
     '<label class="fld" for="s-cn"><span>Nombre de tu consejero</span><input id="s-cn" type="text" data-setting="consejeroNombre" value="' + esc(settings.consejeroNombre) + '"></label>' +
     '<label class="fld" for="s-ct"><span>Teléfono de tu consejero (opcional)</span><input id="s-ct" type="tel" data-setting="consejeroTel" inputmode="tel" value="' + esc(settings.consejeroTel) + '"></label>' +
-    '<label class="fld" for="s-v"><span>Versión de la Biblia para los enlaces</span><select id="s-v" data-setting="version">' + VERSIONES.map(([v, l]) => '<option value="' + v + '"' + (settings.version === v ? ' selected' : '') + '>' + esc(l) + '</option>').join('') + '</select></label></section>';
+    '<label class="fld" for="s-b"><span>Abrir los pasajes en</span><select id="s-b" data-setting="biblia">' + [['preguntar', 'Preguntarme la primera vez'], ['app', 'La app Biblia (YouVersion)'], ['web', 'bible.com']].map(([v, l]) => '<option value="' + v + '"' + (settings.biblia === v ? ' selected' : '') + '>' + esc(l) + '</option>').join('') + '</select></label>' +
+    '<label class="fld" for="s-v"><span>Versión de la Biblia en bible.com</span><select id="s-v" data-setting="version">' + VERSIONES.map(([v, l]) => '<option value="' + v + '"' + (settings.version === v ? ' selected' : '') + '>' + esc(l) + '</option>').join('') + '</select></label>' +
+    '<p class="help-sm">En la app Biblia, el pasaje se abre en la versión que tengas elegida dentro de esa app.</p></section>';
   h += '<section class="panel"><h2>Copia de seguridad</h2><p class="muted">Tus registros se guardan solo en este teléfono. Si borras la app o cambias de teléfono, se pierden. Guarda una copia de vez en cuando (por ejemplo, en Archivos o enviándotela por correo).</p>' +
     '<div class="stack"><button class="btn btn-ghost" data-action="backup">Guardar copia de seguridad</button>' +
     '<label class="btn btn-ghost" for="restore-file">Restaurar desde una copia</label><input id="restore-file" class="sr-only" type="file" accept="application/json,.json"></div>' +
@@ -625,7 +683,7 @@ function viewAjustes() {
   h += '<section class="panel"><h2>Privacidad</h2><p class="muted">Lo que escribes queda guardado solo en este teléfono, dentro de la app. No se envía a ningún servidor. Tu consejero lo ve únicamente cuando tú se lo envías.</p></section>';
   h += '<section class="panel"><h2>Sobre este registro</h2><p class="muted">Sirve para renovar el entendimiento, reemplazando los pensamientos falsos por la verdad. Repítelo cada vez que el pensamiento vuelva: los caminos nuevos se fortalecen con la repetición.</p><div class="refs">' + refLinks('Romanos 12:2; 2 Corintios 10:5') + '</div></section>';
   h += '<button class="btn btn-ghost danger" data-action="wipe">Borrar todos los registros</button>';
-  h += '<p class="foot">Renovando Tu Mente 1.1</p>';
+  h += '<p class="foot">Renovando Tu Mente 1.2</p>';
   return h;
 }
 
@@ -689,7 +747,7 @@ function stepFields(s, d) {
   }
   if (s.n === 3) {
     return '<label class="fld" for="f-citas"><span>Pasajes</span><input id="f-citas" type="text" data-field="citas" placeholder="Ej.: Romanos 8:1; 2 Corintios 5:17" value="' + esc(d.citas) + '" autocomplete="off"></label>' +
-      '<div class="tools"><a id="read-link" class="btn btn-ghost btn-sm' + (splitRefs(d.citas).length ? '' : ' hidden') + '" href="' + esc(bibleUrl(splitRefs(d.citas)[0] || '')) + '" target="_blank" rel="noopener">' + ICON.book + '<span>Leer en la Biblia</span></a></div>' +
+      '<div class="tools"><a id="read-link" class="btn btn-ghost btn-sm' + (splitRefs(d.citas).length ? '' : ' hidden') + '" ' + bibleAttrs(splitRefs(d.citas)[0] || '') + '>' + ICON.book + '<span>Leer en la Biblia</span></a></div>' +
       '<label class="fld" for="f-palabra"><span>Lo que dice</span></label>' + fieldTA(s, d).replace('<label class="sr-only" for="f-palabra">' + esc(s.title) + '</label>', '') +
       themesHTML(d);
   }
@@ -753,7 +811,7 @@ function updateReadLink() {
   const a = $('#read-link'); if (!a) return;
   const refs = splitRefs(state.editor.data.citas);
   a.classList.toggle('hidden', !refs.length);
-  a.href = bibleUrl(refs[0] || '');
+  a.href = webUrl(refs[0] || ''); a.dataset.bible = refs[0] || '';
 }
 
 /* ---------- modal y aviso breve ---------- */
@@ -836,6 +894,52 @@ function restoreFrom(text) {
   toast('Restaurado: ' + plural(added, 'registro nuevo', 'registros nuevos') + (updated ? ' y ' + plural(updated, 'actualizado', 'actualizados') : '') + '.');
 }
 
+/* ---------- abrir pasajes: app Biblia (YouVersion) o bible.com ---------- */
+const isAndroid = /Android/i.test(navigator.userAgent);
+function openWeb(url) {
+  const w = window.open(url, '_blank');
+  if (w) { try { w.opener = null; } catch (e) {} } else { location.href = url; }
+}
+function openInApp(ref) {
+  const app = appUrl(ref), web = webUrl(ref);
+  if (!app) { openWeb(web); return; }
+  if (isAndroid) {
+    // Android abre la app y, si no está instalada, el propio sistema abre bible.com.
+    location.href = 'intent://' + app.replace('youversion://', '') + '#Intent;scheme=youversion;package=com.sirma.mobile.bible.android;S.browser_fallback_url=' + encodeURIComponent(web) + ';end';
+    return;
+  }
+  // iPhone: si la app se abre, esta página pasa a segundo plano. Si no pasa nada, se abre bible.com.
+  let salio = false;
+  const marcar = () => { salio = true; };
+  const vis = () => { if (document.hidden) salio = true; };
+  document.addEventListener('visibilitychange', vis);
+  window.addEventListener('pagehide', marcar);
+  window.addEventListener('blur', marcar);
+  location.href = app;
+  setTimeout(() => {
+    document.removeEventListener('visibilitychange', vis);
+    window.removeEventListener('pagehide', marcar);
+    window.removeEventListener('blur', marcar);
+    if (salio || document.hidden) return;
+    settings.biblia = 'web'; saveSettings();
+    toast('No encontramos la app Biblia, así que abrimos bible.com. Si la instalas, cámbialo en Ajustes.');
+    openWeb(web);
+  }, 1800);
+}
+async function openBible(ref, ev) {
+  if (!ref) return;
+  const movil = isIOS || isAndroid;
+  if (!movil || inFrame) return; // computador o vista previa: el enlace normal abre bible.com
+  ev.preventDefault();
+  if (settings.biblia === 'web') { openWeb(webUrl(ref)); return; }
+  if (settings.biblia === 'app') { openInApp(ref); return; }
+  const k = await modal('¿Tienes la app Biblia?', '<p class="muted">Si tienes instalada la app Biblia (YouVersion), los pasajes se abren ahí. Si no, se abren en bible.com. Te lo preguntamos solo esta vez; puedes cambiarlo en Ajustes.</p>',
+    [{ key: 'app', label: 'Sí, abrir en la app Biblia', cls: 'btn-primary' }, { key: 'web', label: 'No, abrir en bible.com' }]);
+  if (k !== 'app' && k !== 'web') return;
+  settings.biblia = k; saveSettings();
+  if (k === 'app') openInApp(ref); else openWeb(webUrl(ref));
+}
+
 /* ---------- navegación ---------- */
 function goTab(tab, push) {
   if (!TABS.includes(tab)) tab = 'registros';
@@ -848,6 +952,8 @@ window.addEventListener('hashchange', () => { const h = location.hash.slice(1); 
 document.addEventListener('click', async ev => {
   const m = ev.target.closest('[data-modal]');
   if (m) { if (m.dataset.modal === '__bg' && ev.target !== m) return; closeModal(m.dataset.modal); return; }
+  const bl = ev.target.closest('a[data-bible]');
+  if (bl) { openBible(bl.dataset.bible, ev); return; }
   const tabA = ev.target.closest('.tabbar a');
   if (tabA) { ev.preventDefault(); goTab(tabA.dataset.tab, true); return; }
   const b = ev.target.closest('[data-action]');
