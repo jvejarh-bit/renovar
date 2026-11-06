@@ -1,4 +1,4 @@
-# Registro de Diálogo Interno
+# Self-Talk Log
 
 Lleva tu registro en cuatro simples pasos:
 

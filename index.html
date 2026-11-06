@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Renovando Tu Mente</title>
-<meta name="description" content="Registro de diálogo interno: renovar el entendimiento reemplazando los pensamientos falsos por la verdad (Romanos 12:2).">
+<meta name="description" content="Self-Talk Log: renovar el entendimiento reemplazando los pensamientos falsos por la verdad (Romanos 12:2).">
 <meta name="theme-color" content="#F1F4F2" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0E1613" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -553,7 +553,7 @@ function entriesInRange(range) {
 }
 function buildReport(range) {
   const list = entriesInRange(range).slice().sort((a, b) => String(a.fecha).localeCompare(String(b.fecha)));
-  const L = ['REGISTRO DE DIÁLOGO INTERNO'];
+  const L = ['SELF-TALK LOG'];
   const who = [settings.nombre ? 'De: ' + settings.nombre : '', settings.consejeroNombre ? 'Para: ' + settings.consejeroNombre : ''].filter(Boolean).join(' · ');
   if (who) L.push(who);
   L.push(rangeInfo(range).label + ' · ' + plural(list.length, 'registro', 'registros'));
@@ -774,7 +774,7 @@ async function copyText(text) {
 function markSent() { settings.lastSent = new Date().toISOString(); saveSettings(); state.range = 'ultimo'; }
 async function doShare() {
   const text = buildReport(state.range);
-  try { await navigator.share({ title: 'Registro de diálogo interno', text: text }); markSent(); render(); toast('Listo. La próxima vez, «Desde el último envío» empezará aquí.'); }
+  try { await navigator.share({ title: 'Self-Talk Log', text: text }); markSent(); render(); toast('Listo. La próxima vez, «Desde el último envío» empezará aquí.'); }
   catch (err) { if (err && err.name === 'AbortError') return; doCopy(); }
 }
 async function doCopy() {
