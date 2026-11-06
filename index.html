@@ -364,7 +364,7 @@ const standalone = window.navigator.standalone === true || (window.matchMedia &&
 let entries = load(K_ENTRIES, []);
 if (!Array.isArray(entries)) entries = [];
 /* Datos del consejero que vienen cargados para todos. Cada persona puede cambiarlos en Ajustes. */
-const CONSEJERO = { nombre: '', tel: '' };
+const CONSEJERO = { nombre: 'Javier Véjar H.', tel: '+56 9 4645 6871' };
 
 let settings = Object.assign({ nombre: '', consejeroNombre: '', consejeroTel: '', version: 'NBLA', lastSent: null, lastBackup: null, installHidden: false }, load(K_SETTINGS, {}) || {});
 // La versión 1.0 venía con Reina-Valera 1960 por defecto: quien no eligió otra a propósito pasa a la NBLA.
