@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Renovar</title>
+<title>Renovando Tu Mente</title>
 <meta name="description" content="Registro de diálogo interno: renovar el entendimiento reemplazando los pensamientos falsos por la verdad (Romanos 12:2).">
 <meta name="theme-color" content="#F1F4F2" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0E1613" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Renovar">
+<meta name="apple-mobile-web-app-title" content="Renovando Tu Mente">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -326,7 +326,7 @@ const EJEMPLO = {
   verdad: 'Mi valor no depende de lo que opine mi jefa. En Cristo soy aceptado, y puedo preguntarle con calma qué mejorar.'
 };
 
-const VERSIONES = [['RVR1960', 'Reina-Valera 1960'], ['NVI', 'Nueva Versión Internacional'], ['LBLA', 'La Biblia de las Américas'], ['NBLA', 'Nueva Biblia de las Américas'], ['NTV', 'Nueva Traducción Viviente'], ['DHH', 'Dios Habla Hoy']];
+const VERSIONES = [['NBLA', 'Nueva Biblia de las Américas'], ['RVR1960', 'Reina-Valera 1960'], ['NVI', 'Nueva Versión Internacional'], ['LBLA', 'La Biblia de las Américas'], ['NTV', 'Nueva Traducción Viviente'], ['DHH', 'Dios Habla Hoy']];
 
 const ICON = {
   plus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
@@ -363,7 +363,9 @@ const standalone = window.navigator.standalone === true || (window.matchMedia &&
 
 let entries = load(K_ENTRIES, []);
 if (!Array.isArray(entries)) entries = [];
-let settings = Object.assign({ nombre: '', consejeroNombre: '', consejeroTel: '', version: 'RVR1960', lastSent: null, lastBackup: null, installHidden: false }, load(K_SETTINGS, {}) || {});
+let settings = Object.assign({ nombre: '', consejeroNombre: '', consejeroTel: '', version: 'NBLA', lastSent: null, lastBackup: null, installHidden: false }, load(K_SETTINGS, {}) || {});
+// La versión 1.0 venía con Reina-Valera 1960 por defecto: quien no eligió otra a propósito pasa a la NBLA.
+if (!settings.versionElegida && settings.version !== 'NBLA') { settings.version = 'NBLA'; save(K_SETTINGS, settings); }
 
 const TABS = ['registros', 'verdades', 'enviar', 'ajustes'];
 const state = { tab: 'registros', view: 'tab', id: null, q: '', range: settings.lastSent ? 'ultimo' : '7', editor: null };
@@ -405,18 +407,18 @@ function toLocalInput(iso) { const d = iso ? new Date(iso) : new Date(); return 
 function fromLocalInput(v) { const d = new Date(v); return isNaN(d) ? new Date().toISOString() : d.toISOString(); }
 
 function splitRefs(s) { return String(s || '').split(';').map(x => x.trim()).filter(Boolean); }
-function bibleUrl(ref) { return 'https://www.biblegateway.com/passage/?search=' + encodeURIComponent(ref) + '&version=' + encodeURIComponent(settings.version || 'RVR1960'); }
+function bibleUrl(ref) { return 'https://www.biblegateway.com/passage/?search=' + encodeURIComponent(ref) + '&version=' + encodeURIComponent(settings.version || 'NBLA'); }
 function refLinks(s) { return splitRefs(s).map(r => '<a class="ref" href="' + esc(bibleUrl(r)) + '" target="_blank" rel="noopener">' + esc(r) + '</a>').join(''); }
 
 /* ---------- vistas ---------- */
 function banners() {
   let h = '';
   if (!storageOK) {
-    h += '<div class="banner warn" role="alert"><p><strong>Este navegador no permite guardar.</strong>Lo que escribas se perderá al cerrar. Abre Renovar desde su enlace en Safari e instálala en tu pantalla de inicio.</p></div>';
+    h += '<div class="banner warn" role="alert"><p><strong>Este navegador no permite guardar.</strong>Lo que escribas se perderá al cerrar. Abre Renovando Tu Mente desde su enlace e instálala en tu pantalla de inicio.</p></div>';
   } else if (inFrame) {
-    h += '<div class="banner"><p><strong>Vista previa</strong>Aquí puedes probar la app, pero lo que escribas puede borrarse. Para usarla de verdad, ábrela desde su enlace en Safari e instálala.</p></div>';
+    h += '<div class="banner"><p><strong>Vista previa</strong>Aquí puedes probar la app, pero lo que escribas puede borrarse. Para usarla de verdad, ábrela desde su enlace e instálala.</p></div>';
   } else if (isIOS && !standalone && !settings.installHidden) {
-    h += '<div class="banner"><p><strong>Instálala en tu iPhone</strong>Toca el botón Compartir de Safari y elige «Agregar a pantalla de inicio». Así se abre como app y funciona sin internet.</p><div class="banner-actions"><button class="link" data-action="go-install">Ver cómo</button><button class="link" data-action="hide-install">Ya entendí</button></div></div>';
+    h += '<div class="banner"><p><strong>Instálala en tu iPhone</strong>Toca el botón Compartir y luego «Ver más», o directamente «Añadir a pantalla de inicio». Así se abre como app y funciona sin internet.</p><div class="banner-actions"><button class="link" data-action="go-install">Ver cómo</button><button class="link" data-action="hide-install">Ya entendí</button></div></div>';
   }
   if (storageOK && !inFrame && entries.length >= 5) {
     const last = settings.lastBackup ? new Date(settings.lastBackup) : null;
@@ -477,7 +479,7 @@ function groupsHTML() {
 }
 
 function viewRegistros() {
-  let h = '<header class="top"><p class="eyebrow">Renovar · Romanos 12:2</p><h1>Registro de diálogo interno</h1></header>';
+  let h = '<header class="top"><p class="eyebrow">Renovando Tu Mente · Romanos 12:2</p><h1>Registro de diálogo interno</h1></header>';
   h += banners();
   h += '<button class="btn btn-primary btn-block" data-action="new">' + ICON.plus + '<span>Nuevo registro</span></button>';
   h += weekStrip();
@@ -520,7 +522,7 @@ function viewVerdades() {
   const mine = entries.filter(e => e.verdad && e.verdad.trim())
     .sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)))
     .filter(e => { const k = norm(e.verdad).replace(/\W+/g, ' ').trim(); if (seen.has(k)) return false; seen.add(k); return true; });
-  let h = '<header class="top"><p class="eyebrow">Renovar · tarjeta de verdades</p><h1>Verdades para repetir</h1><p class="lead">Léelas apenas vuelva el pensamiento. Las primeras son las que tú escribiste.</p></header>';
+  let h = '<header class="top"><p class="eyebrow">Renovando Tu Mente · tarjeta de verdades</p><h1>Verdades para repetir</h1><p class="lead">Léelas apenas vuelva el pensamiento. Las primeras son las que tú escribiste.</p></header>';
   h += '<section><h2 class="sec-h">De mis registros</h2>';
   if (mine.length) {
     h += '<ul class="truths">' + mine.map(e => '<li><p class="truth">' + nl(e.verdad) + '</p><div class="truth-meta">' + (e.citas ? '<div class="refs">' + refLinks(e.citas) + '</div>' : '') + '<button class="link" data-action="open" data-id="' + esc(e.id) + '">Ver registro</button></div></li>').join('') + '</ul>';
@@ -573,7 +575,7 @@ function viewEnviar() {
   if (state.range === 'ultimo' && !settings.lastSent) state.range = '7';
   const opts = [['ultimo', 'Desde el último envío'], ['7', 'Últimos 7 días'], ['30', 'Últimos 30 días'], ['todo', 'Todos']];
   const n = entriesInRange(state.range).length;
-  let h = '<header class="top"><p class="eyebrow">Renovar · para la próxima sesión</p><h1>Enviar a mi consejero</h1><p class="lead">Elige qué registros enviar. Se abrirá el menú Compartir para mandarlos por WhatsApp, correo o Mensajes.</p></header>';
+  let h = '<header class="top"><p class="eyebrow">Renovando Tu Mente · para la próxima sesión</p><h1>Enviar a mi consejero</h1><p class="lead">Elige qué registros enviar. Se abrirá el menú Compartir para mandarlos por WhatsApp, correo o Mensajes.</p></header>';
   h += '<fieldset class="seg"><legend class="sr-only">Qué registros enviar</legend>' + opts.map(([v, l]) => {
     const dis = v === 'ultimo' && !settings.lastSent;
     return '<label class="opt"><input type="radio" name="range" value="' + v + '"' + (state.range === v ? ' checked' : '') + (dis ? ' disabled' : '') + '><span>' + l + '</span></label>';
@@ -598,7 +600,7 @@ function helpHTML() {
 }
 
 function viewAjustes() {
-  let h = '<header class="top"><p class="eyebrow">Renovar</p><h1>Ajustes y ayuda</h1></header>';
+  let h = '<header class="top"><p class="eyebrow">Renovando Tu Mente</p><h1>Ajustes y ayuda</h1></header>';
   h += '<section class="panel urgent" id="ayuda"><h2>Ayuda urgente</h2>' + helpHTML() + '</section>';
   h += '<section class="panel"><h2>Tus datos</h2>' +
     '<label class="fld" for="s-nombre"><span>Tu nombre</span><input id="s-nombre" type="text" data-setting="nombre" autocomplete="name" value="' + esc(settings.nombre) + '"></label>' +
@@ -610,14 +612,12 @@ function viewAjustes() {
     '<label class="btn btn-ghost" for="restore-file">Restaurar desde una copia</label><input id="restore-file" class="sr-only" type="file" accept="application/json,.json"></div>' +
     '<p class="muted">' + (settings.lastBackup ? 'Última copia: ' + whenLabel(settings.lastBackup) + '.' : 'Todavía no has guardado una copia.') + ' ' + plural(entries.length, 'registro guardado', 'registros guardados') + '.</p></section>';
   h += '<section class="panel" id="instalar"><h2>Instalar en el iPhone</h2><ol class="steps-ol">' +
-    '<li>Abre el enlace de Renovar en Safari.</li>' +
-    '<li>Toca el botón Compartir (el cuadrado con una flecha hacia arriba). En algunas versiones está dentro del botón «···».</li>' +
-    '<li>Elige «Agregar a pantalla de inicio» y luego «Agregar».</li>' +
-    '<li>Abre Renovar desde su ícono. Funciona sin internet.</li></ol></section>';
+    '<li>Abre el enlace.</li>' +
+    '<li>Toca el botón Compartir, luego «Ver más» o directamente «Añadir a pantalla de inicio».</li></ol></section>';
   h += '<section class="panel"><h2>Privacidad</h2><p class="muted">Lo que escribes queda guardado solo en este teléfono, dentro de la app. No se envía a ningún servidor. Tu consejero lo ve únicamente cuando tú se lo envías.</p></section>';
   h += '<section class="panel"><h2>Sobre este registro</h2><p class="muted">Sirve para renovar el entendimiento, reemplazando los pensamientos falsos por la verdad. Repítelo cada vez que el pensamiento vuelva: los caminos nuevos se fortalecen con la repetición.</p><div class="refs">' + refLinks('Romanos 12:2; 2 Corintios 10:5') + '</div></section>';
   h += '<button class="btn btn-ghost danger" data-action="wipe">Borrar todos los registros</button>';
-  h += '<p class="foot">Renovar 1.0</p>';
+  h += '<p class="foot">Renovando Tu Mente 1.1</p>';
   return h;
 }
 
@@ -792,7 +792,7 @@ async function doBackup() {
     try {
       const file = new File([json], name, { type: 'application/json' });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'Copia de seguridad de Renovar' });
+        await navigator.share({ files: [file], title: 'Copia de seguridad de Renovando Tu Mente' });
         markBackup(); render(); toast('Copia guardada.'); return;
       }
       const url = URL.createObjectURL(file);
@@ -812,9 +812,9 @@ function sanitize(x) {
 }
 function restoreFrom(text) {
   let data;
-  try { data = JSON.parse(text); } catch (e) { toast('Ese archivo no es una copia de Renovar.'); return; }
+  try { data = JSON.parse(text); } catch (e) { toast('Ese archivo no es una copia de Renovando Tu Mente.'); return; }
   const list = data && (data.registros || data.entries);
-  if (!Array.isArray(list)) { toast('Ese archivo no es una copia de Renovar.'); return; }
+  if (!Array.isArray(list)) { toast('Ese archivo no es una copia de Renovando Tu Mente.'); return; }
   let added = 0, updated = 0;
   list.forEach(x => {
     if (!x || (!x.pensamiento && !x.situacion)) return;
@@ -920,7 +920,7 @@ document.addEventListener('change', ev => {
     const fr = new FileReader(); fr.onload = () => restoreFrom(String(fr.result)); fr.readAsText(t.files[0]); t.value = '';
     return;
   }
-  if (t.dataset.setting && t.tagName === 'SELECT') { settings[t.dataset.setting] = t.value; saveSettings(); }
+  if (t.dataset.setting && t.tagName === 'SELECT') { settings[t.dataset.setting] = t.value; if (t.dataset.setting === 'version') settings.versionElegida = true; saveSettings(); }
 });
 document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && $('#modal').innerHTML) closeModal('__esc'); });
 

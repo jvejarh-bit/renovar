@@ -1,6 +1,6 @@
-/* Renovar: guarda la app en el teléfono para que funcione sin internet.
+/* Renovando Tu Mente: guarda la app en el teléfono para que funcione sin internet.
    Al cambiar algún archivo, sube el número de CACHE para que los teléfonos tomen la versión nueva. */
-const CACHE = 'renovar-v1';
+const CACHE = 'renovar-v2';
 const ASSETS = [
   './',
   './index.html',
