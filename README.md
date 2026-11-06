@@ -1,6 +1,6 @@
-# Renovar · Registro de diálogo interno
+# Registro de Diálogo Interno
 
-Web app para iPhone que acompaña la consejería bíblica. Cada persona anota en cuatro pasos:
+Lleva tu registro en cuatro simples pasos:
 
 1. La situación.
 2. El pensamiento que apareció.
@@ -13,7 +13,7 @@ Después marca cada vez que el pensamiento vuelve y envía sus registros a su co
 
 ## Instalar en el iPhone
 
-1. Abre el enlace en Safari.
+1. Abre el enlace.
 2. Toca el botón Compartir (en algunas versiones está dentro del botón «···»).
 3. Elige «Agregar a pantalla de inicio» y luego «Agregar».
 
