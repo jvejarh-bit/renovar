@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 # Registro de Diálogo Interno
-=======
-# Renovando Tu Mente · Registro de diálogo interno
->>>>>>> 7e856b6 (Renombrar a Renovando Tu Mente, NBLA por defecto y nuevos pasos de instalación)
 
 Lleva tu registro en cuatro simples pasos:
 
@@ -18,12 +14,7 @@ Después marca cada vez que el pensamiento vuelve y envía sus registros a su co
 ## Instalar en el iPhone
 
 1. Abre el enlace.
-<<<<<<< HEAD
-2. Toca el botón Compartir (en algunas versiones está dentro del botón «···»).
-3. Elige «Agregar a pantalla de inicio» y luego «Agregar».
-=======
 2. Toca el botón Compartir, luego «Ver más» o directamente «Añadir a pantalla de inicio».
->>>>>>> 7e856b6 (Renombrar a Renovando Tu Mente, NBLA por defecto y nuevos pasos de instalación)
 
 ## Privacidad
 
