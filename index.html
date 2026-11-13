@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Renovando Tu Mente</title>
+<title>Metanoia</title>
 <meta name="description" content="Self-Talk Log: renovar el entendimiento reemplazando los pensamientos falsos por la verdad (Romanos 12:2).">
 <meta name="theme-color" content="#F1F4F2" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0E1613" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Renovando Tu Mente">
+<meta name="apple-mobile-web-app-title" content="Metanoia">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -246,6 +246,19 @@ textarea.truth-in{font-family:var(--font-truth);font-size:20px}
 #toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translate(-50%,16px);z-index:70;background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:12px;font:500 15px/1.35 var(--font-ui);width:max-content;max-width:calc(100% - 32px);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 body.editing #toast{bottom:calc(24px + env(safe-area-inset-bottom))}
+/* aviso para instalar, fijo sobre la barra inferior */
+.install{position:fixed;left:0;right:0;bottom:calc(66px + env(safe-area-inset-bottom));z-index:30;padding:0 max(12px,env(safe-area-inset-right)) 0 max(12px,env(safe-area-inset-left))}
+.install[hidden],body.editing .install{display:none}
+.install-card{max-width:576px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:0 10px 30px rgba(10,30,22,.18);padding:14px 14px 16px;display:grid;grid-template-columns:48px 1fr 36px;gap:10px 12px;align-items:center}
+.install-ic{width:48px;height:48px;border-radius:11px}
+.install-t{font:700 16px/1.25 var(--font-ui)}
+.install-s{font-size:14px;color:var(--muted);line-height:1.35}
+.install-x{width:36px;height:36px;border-radius:50%;border:0;background:var(--bg);color:var(--muted);font:500 22px/1 var(--font-ui);cursor:pointer;align-self:start}
+.install-steps{grid-column:1/-1;margin:0;padding:0 0 0 22px;display:grid;gap:6px;font-size:15px;line-height:1.4}
+.install-steps svg{width:18px;height:18px;vertical-align:-3px;color:var(--accent)}
+.install-go{grid-column:1/-1}
+.app{padding-bottom:calc(104px + var(--install-h,0px) + env(safe-area-inset-bottom))}
+body.install-on #toast{bottom:calc(88px + var(--install-h,0px) + env(safe-area-inset-bottom))}
 
 @media (prefers-reduced-motion: reduce){
   .flash{animation:none}
@@ -263,6 +276,7 @@ body.editing #toast{bottom:calc(24px + env(safe-area-inset-bottom))}
 </nav>
 <div id="editor" aria-label="Nuevo registro"></div>
 <div id="modal"></div>
+<div id="install" class="install" role="region" aria-label="Instalar Metanoia" hidden></div>
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -495,11 +509,9 @@ function refLinks(s) { return splitRefs(s).map(r => '<a class="ref" ' + bibleAtt
 function banners() {
   let h = '';
   if (!storageOK) {
-    h += '<div class="banner warn" role="alert"><p><strong>Este navegador no permite guardar.</strong>Lo que escribas se perderá al cerrar. Abre Renovando Tu Mente desde su enlace e instálala en tu pantalla de inicio.</p></div>';
+    h += '<div class="banner warn" role="alert"><p><strong>Este navegador no permite guardar.</strong>Lo que escribas se perderá al cerrar. Abre Metanoia desde su enlace e instálala en tu pantalla de inicio.</p></div>';
   } else if (inFrame) {
     h += '<div class="banner"><p><strong>Vista previa</strong>Aquí puedes probar la app, pero lo que escribas puede borrarse. Para usarla de verdad, ábrela desde su enlace e instálala.</p></div>';
-  } else if (isIOS && !standalone && !settings.installHidden) {
-    h += '<div class="banner"><p><strong>Instálala en tu iPhone</strong>Toca el botón Compartir y luego «Ver más», o directamente «Añadir a pantalla de inicio». Así se abre como app y funciona sin internet.</p><div class="banner-actions"><button class="link" data-action="go-install">Ver cómo</button><button class="link" data-action="hide-install">Ya entendí</button></div></div>';
   }
   if (storageOK && !inFrame && entries.length >= 5) {
     const last = settings.lastBackup ? new Date(settings.lastBackup) : null;
@@ -560,7 +572,7 @@ function groupsHTML() {
 }
 
 function viewRegistros() {
-  let h = '<header class="top"><p class="eyebrow">Renovando Tu Mente · Romanos 12:2</p><h1>Self-Talk Log</h1></header>';
+  let h = '<header class="top"><p class="eyebrow">Metanoia · Romanos 12:2</p><h1>Self-Talk Log</h1></header>';
   h += banners();
   h += '<button class="btn btn-primary btn-block" data-action="new">' + ICON.plus + '<span>Nuevo registro</span></button>';
   h += weekStrip();
@@ -603,7 +615,7 @@ function viewVerdades() {
   const mine = entries.filter(e => e.verdad && e.verdad.trim())
     .sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)))
     .filter(e => { const k = norm(e.verdad).replace(/\W+/g, ' ').trim(); if (seen.has(k)) return false; seen.add(k); return true; });
-  let h = '<header class="top"><p class="eyebrow">Renovando Tu Mente · tarjeta de verdades</p><h1>Verdades para repetir</h1><p class="lead">Léelas apenas vuelva el pensamiento. Las primeras son las que tú escribiste.</p></header>';
+  let h = '<header class="top"><p class="eyebrow">Metanoia · tarjeta de verdades</p><h1>Verdades para repetir</h1><p class="lead">Léelas apenas vuelva el pensamiento. Las primeras son las que tú escribiste.</p></header>';
   h += '<section><h2 class="sec-h">De mis registros</h2>';
   if (mine.length) {
     h += '<ul class="truths">' + mine.map(e => '<li><p class="truth">' + nl(e.verdad) + '</p><div class="truth-meta">' + (e.citas ? '<div class="refs">' + refLinks(e.citas) + '</div>' : '') + '<button class="link" data-action="open" data-id="' + esc(e.id) + '">Ver registro</button></div></li>').join('') + '</ul>';
@@ -656,7 +668,7 @@ function viewEnviar() {
   if (state.range === 'ultimo' && !settings.lastSent) state.range = '7';
   const opts = [['ultimo', 'Desde el último envío'], ['7', 'Últimos 7 días'], ['30', 'Últimos 30 días'], ['todo', 'Todos']];
   const n = entriesInRange(state.range).length;
-  let h = '<header class="top"><p class="eyebrow">Renovando Tu Mente · para la próxima sesión</p><h1>Enviar a mi consejero</h1><p class="lead">Elige qué registros enviar. Se abrirá el menú Compartir para mandarlos por WhatsApp, correo o Mensajes.</p></header>';
+  let h = '<header class="top"><p class="eyebrow">Metanoia · para la próxima sesión</p><h1>Enviar a mi consejero</h1><p class="lead">Elige qué registros enviar. Se abrirá el menú Compartir para mandarlos por WhatsApp, correo o Mensajes.</p></header>';
   h += '<fieldset class="seg"><legend class="sr-only">Qué registros enviar</legend>' + opts.map(([v, l]) => {
     const dis = v === 'ultimo' && !settings.lastSent;
     return '<label class="opt"><input type="radio" name="range" value="' + v + '"' + (state.range === v ? ' checked' : '') + (dis ? ' disabled' : '') + '><span>' + l + '</span></label>';
@@ -681,7 +693,7 @@ function helpHTML() {
 }
 
 function viewAjustes() {
-  let h = '<header class="top"><p class="eyebrow">Renovando Tu Mente</p><h1>Ajustes y ayuda</h1></header>';
+  let h = '<header class="top"><p class="eyebrow">Metanoia</p><h1>Ajustes y ayuda</h1></header>';
   h += '<section class="panel urgent" id="ayuda"><h2>Ayuda urgente</h2>' + helpHTML() + '</section>';
   h += '<section class="panel"><h2>Tus datos</h2>' +
     '<p class="muted">Tu nombre y el de tu consejero aparecen al comienzo del mensaje que le envías desde «Enviar», para que sepa de quién es cada registro. El teléfono de tu consejero queda a un toque en «Ayuda urgente». Al tocar un pasaje se abre en la app Biblia (YouVersion) o en bible.com, según lo que elijas abajo. ' + ((CONSEJERO.nombre || CONSEJERO.tel) ? 'Los datos de tu consejero vienen cargados; puedes cambiarlos si lo necesitas. ' : '') + 'Todo queda guardado solo en este teléfono.</p>' +
@@ -695,13 +707,14 @@ function viewAjustes() {
     '<div class="stack"><button class="btn btn-ghost" data-action="backup">Guardar copia de seguridad</button>' +
     '<label class="btn btn-ghost" for="restore-file">Restaurar desde una copia</label><input id="restore-file" class="sr-only" type="file" accept="application/json,.json"></div>' +
     '<p class="muted">' + (settings.lastBackup ? 'Última copia: ' + whenLabel(settings.lastBackup) + '.' : 'Todavía no has guardado una copia.') + ' ' + plural(entries.length, 'registro guardado', 'registros guardados') + '.</p></section>';
-  h += '<section class="panel" id="instalar"><h2>Instalar en el iPhone</h2><ol class="steps-ol">' +
-    '<li>Abre el enlace.</li>' +
-    '<li>Toca el botón Compartir, luego «Ver más» o directamente «Añadir a pantalla de inicio».</li></ol></section>';
+  h += '<section class="panel" id="instalar"><h2>Instalar en tu teléfono</h2>' +
+    (standalone ? '<p class="muted">Ya la estás usando instalada como app.</p>' : '<p class="muted">En este navegador:</p><ol class="steps-ol">' + pasosInstalar(navegador()).map(x => '<li>' + x + '</li>').join('') + '</ol>') +
+    '<p class="muted"><strong>iPhone</strong> (Safari, Chrome u otro): abre el enlace, toca Compartir y elige «Añadir a pantalla de inicio». Si no aparece, búscalo en «Ver más».</p>' +
+    '<p class="muted"><strong>Android</strong> (Chrome, Samsung Internet u otro): abre el enlace, toca el menú (⋮ o ≡) y elige «Instalar app» o «Añadir a pantalla de inicio».</p></section>';
   h += '<section class="panel"><h2>Privacidad</h2><p class="muted">Lo que escribes queda guardado solo en este teléfono, dentro de la app. No se envía a ningún servidor. Tu consejero lo ve únicamente cuando tú se lo envías.</p></section>';
   h += '<section class="panel"><h2>Sobre este registro</h2><p class="muted">Sirve para renovar el entendimiento, reemplazando los pensamientos falsos por la verdad. Repítelo cada vez que el pensamiento vuelva: los caminos nuevos se fortalecen con la repetición.</p><div class="refs">' + refLinks('Romanos 12:2; 2 Corintios 10:5') + '</div></section>';
   h += '<button class="btn btn-ghost danger" data-action="wipe">Borrar todos los registros</button>';
-  h += '<p class="foot">Renovando Tu Mente 1.7</p>';
+  h += '<p class="foot">Metanoia 1.8</p>';
   return h;
 }
 
@@ -878,7 +891,7 @@ async function doBackup() {
     try {
       const file = new File([json], name, { type: 'application/json' });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'Copia de seguridad de Renovando Tu Mente' });
+        await navigator.share({ files: [file], title: 'Copia de seguridad de Metanoia' });
         markBackup(); render(); toast('Copia guardada.'); return;
       }
       const url = URL.createObjectURL(file);
@@ -898,9 +911,9 @@ function sanitize(x) {
 }
 function restoreFrom(text) {
   let data;
-  try { data = JSON.parse(text); } catch (e) { toast('Ese archivo no es una copia de Renovando Tu Mente.'); return; }
+  try { data = JSON.parse(text); } catch (e) { toast('Ese archivo no es una copia de Metanoia.'); return; }
   const list = data && (data.registros || data.entries);
-  if (!Array.isArray(list)) { toast('Ese archivo no es una copia de Renovando Tu Mente.'); return; }
+  if (!Array.isArray(list)) { toast('Ese archivo no es una copia de Metanoia.'); return; }
   let added = 0, updated = 0;
   list.forEach(x => {
     if (!x || (!x.pensamiento && !x.situacion)) return;
@@ -1019,6 +1032,15 @@ document.addEventListener('click', async ev => {
     case 'backup': doBackup(); break;
     case 'go-install': goTab('ajustes', true); setTimeout(() => { const el = $('#instalar'); if (el) el.scrollIntoView(); }, 0); break;
     case 'hide-install': settings.installHidden = true; saveSettings(); render(); break;
+    case 'install-close': try { sessionStorage.setItem(K_INSTALL, '1'); } catch (e) {} renderInstall(); break;
+    case 'install-now': {
+      if (!installEvt) break;
+      const evt = installEvt; installEvt = null;
+      evt.prompt();
+      try { const r = await evt.userChoice; if (r && r.outcome === 'accepted') { try { sessionStorage.setItem(K_INSTALL, '1'); } catch (e) {} } } catch (e) {}
+      renderInstall();
+      break;
+    }
     case 'wipe': {
       const k = await modal('¿Borrar todos los registros?', '<p class="muted">Se borrarán ' + plural(entries.length, 'registro', 'registros') + ' de este teléfono. Si quieres conservarlos, guarda antes una copia de seguridad.</p>', [{ key: 'del', label: 'Borrar todo', cls: 'btn-primary' }, { key: 'no', label: 'Cancelar' }]);
       if (k === 'del') { entries = []; persist(); save(K_DRAFT, null); render(); toast('Se borraron todos los registros.'); }
@@ -1059,10 +1081,67 @@ document.addEventListener('change', ev => {
 });
 document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && $('#modal').innerHTML) closeModal('__esc'); });
 
+/* ---------- aviso para instalar la app (iPhone, Android y cualquier navegador) ---------- */
+let installEvt = null;
+const K_INSTALL = 'metanoia.aviso-instalar-cerrado';
+function navegador() {
+  const ua = navigator.userAgent;
+  if (isIOS) {
+    if (/CriOS/.test(ua)) return 'ios-chrome';
+    if (/FxiOS/.test(ua)) return 'ios-firefox';
+    if (/EdgiOS/.test(ua)) return 'ios-edge';
+    return 'ios-safari';
+  }
+  if (/Android/i.test(ua)) {
+    if (/SamsungBrowser/i.test(ua)) return 'android-samsung';
+    if (/Firefox/i.test(ua)) return 'android-firefox';
+    return 'android-chrome'; // Chrome, Edge, Opera, Brave y otros usan el menú ⋮
+  }
+  return 'pc';
+}
+function pasosInstalar(n) {
+  const sh = ICON.share;
+  const ver = 'Elige «Añadir a pantalla de inicio». Si no aparece, búscalo en «Ver más».';
+  switch (n) {
+    case 'ios-safari': return ['Toca el botón Compartir ' + sh + ' en la barra de Safari.', ver];
+    case 'ios-chrome': return ['Toca el botón Compartir ' + sh + ' junto a la barra de direcciones.', ver];
+    case 'ios-edge': return ['Toca el menú ··· y luego Compartir ' + sh + '.', ver];
+    case 'ios-firefox': return ['Toca el menú ☰ y luego Compartir ' + sh + '.', ver];
+    case 'android-samsung': return ['Toca el menú ≡ (abajo a la derecha).', 'Elige «Añadir página a» y luego «Pantalla de inicio».'];
+    case 'android-firefox': return ['Toca el menú ⋮.', 'Elige «Instalar» o «Añadir a pantalla de inicio».'];
+    case 'android-chrome': return ['Toca el menú ⋮ (arriba a la derecha).', 'Elige «Instalar app» o «Añadir a pantalla de inicio».'];
+    default: return ['Abre este mismo enlace en tu teléfono.', 'Ahí te aparecerán los pasos para instalarla.'];
+  }
+}
+function avisoCerrado() { try { return sessionStorage.getItem(K_INSTALL) === '1'; } catch (e) { return false; } }
+function renderInstall() {
+  const box = $('#install');
+  const n = navegador();
+  // Se muestra mientras la app no esté instalada. En el computador, solo si el navegador ofrece instalarla.
+  const mostrar = !standalone && !inFrame && !avisoCerrado() && (n !== 'pc' || installEvt);
+  if (!mostrar) { box.hidden = true; box.innerHTML = ''; document.body.classList.remove('install-on'); document.documentElement.style.setProperty('--install-h', '0px'); return; }
+  const icon = (document.querySelector('link[rel="apple-touch-icon"]') || {}).href || '';
+  box.innerHTML = '<div class="install-card">' +
+    (icon ? '<img class="install-ic" src="' + esc(icon) + '" alt="">' : '<span></span>') +
+    '<div><p class="install-t">Instala Metanoia en tu ' + (n === 'pc' ? 'equipo' : 'teléfono') + '</p><p class="install-s">Se abre como una app, sin barras del navegador, y funciona sin internet.</p></div>' +
+    '<button class="install-x" data-action="install-close" aria-label="Cerrar aviso">×</button>' +
+    (installEvt
+      ? '<button class="btn btn-primary install-go" data-action="install-now">Instalar ahora</button>'
+      : '<ol class="install-steps">' + pasosInstalar(n).map(x => '<li>' + x + '</li>').join('') + '</ol>') +
+    '</div>';
+  box.hidden = false;
+  document.body.classList.add('install-on');
+  requestAnimationFrame(() => document.documentElement.style.setProperty('--install-h', (box.firstChild ? box.firstChild.offsetHeight + 12 : 0) + 'px'));
+}
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; renderInstall(); });
+window.addEventListener('appinstalled', () => { installEvt = null; try { sessionStorage.setItem(K_INSTALL, '1'); } catch (e) {} renderInstall(); toast('Listo: Metanoia quedó instalada. Ábrela desde su ícono.'); });
+window.addEventListener('resize', () => { if (!$('#install').hidden) renderInstall(); });
+
 /* ---------- inicio ---------- */
 const h0 = location.hash.slice(1);
 state.tab = TABS.includes(h0) ? h0 : 'registros';
 render();
+renderInstall();
 
 if (!inFrame) {
   if (navigator.storage && navigator.storage.persist) { navigator.storage.persist().catch(() => {}); }
