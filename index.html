@@ -236,7 +236,13 @@ textarea.truth-in{font-family:var(--font-truth);font-size:20px}
 .read-links{display:grid;gap:8px;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
 .read-h{display:flex;align-items:center;gap:6px;font:600 14px/1.3 var(--font-ui);color:var(--muted)}
 .read-h svg{width:18px;height:18px}
-.read-links .ref{font-size:15px;padding:10px 14px}
+.read-links{gap:10px}
+.read-links .refs{gap:8px}
+.ref-item{display:inline-flex;align-items:stretch;border-radius:999px;background:var(--accent-soft);overflow:hidden}
+.ref-item .ref{font-size:15px;padding:10px 4px 10px 14px;background:none;border-radius:0}
+.ref-x{border:0;background:none;color:var(--accent);font:400 22px/1 var(--font-ui);padding:0 12px 0 8px;min-width:40px;cursor:pointer;opacity:.75}
+.ref-add{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+.ref-add input[type=text]{min-height:44px;padding:10px 12px}
 .themes-all{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:0 14px}
 .themes-all > summary{list-style:none;cursor:pointer;padding:13px 0;font-weight:600;font-size:16px;color:var(--accent);display:flex;justify-content:space-between;gap:12px}
 .themes-all > summary::-webkit-details-marker{display:none}
@@ -1011,7 +1017,7 @@ function viewAjustes() {
   h += '<section class="panel"><h2>Privacidad</h2><p class="muted">' + (cloud.user ? PRIVACIDAD_NUBE : 'Lo que escribes queda guardado solo en este teléfono, dentro de la app. No se envía a ningún servidor. Tu consejero lo ve únicamente cuando tú se lo envías.' + (cloudDisponible() ? ' Si creas tu cuenta, también se guarda en internet.' : '')) + '</p></section>';
   h += '<section class="panel"><h2>Sobre este registro</h2><p class="muted">Sirve para renovar el entendimiento, reemplazando los pensamientos falsos por la verdad. Repítelo cada vez que el pensamiento vuelva: los caminos nuevos se fortalecen con la repetición.</p><div class="refs">' + refLinks('Romanos 12:2; 2 Corintios 10:5') + '</div></section>';
   h += '<button class="btn btn-ghost danger" data-action="wipe">Borrar todos los registros</button>';
-  h += '<p class="foot">Metanoia 2.4</p>';
+  h += '<p class="foot">Metanoia 2.5</p>';
   return h;
 }
 
@@ -1074,8 +1080,7 @@ function stepFields(s, d) {
     return fieldTA(s, d) + '<p class="help-sm">Si el pensamiento es de no querer vivir o de hacerte daño, no lo guardes solo aquí. <button class="link" data-action="help">Ver ayuda urgente</button></p>';
   }
   if (s.n === 3) {
-    return themesHTML(d) + '<label class="fld" for="f-citas"><span>Pasajes</span><input id="f-citas" type="text" data-field="citas" placeholder="Ej.: Romanos 8:1; 2 Corintios 5:17" value="' + esc(d.citas) + '" autocomplete="off"></label>' +
-      '<div id="read-links" class="read-links' + (splitRefs(d.citas).length ? '' : ' hidden') + '"><p class="read-h">' + ICON.book + '<span>Leer en la Biblia (toca cada pasaje)</span></p><div class="refs">' + refLinks(d.citas) + '</div></div>' +
+    return themesHTML(d) + '<div class="fld"><span>Pasajes</span>' + citasBoxHTML(d) + '</div>' +
       '<label class="fld" for="f-palabra"><span>Lo que dice</span></label>' + fieldTA(s, d).replace('<label class="sr-only" for="f-palabra">' + esc(s.title) + '</label>', '');
   }
   const recap = (d.pensamiento || '').trim() ? '<div class="recap"><p><span class="ex-l">El pensamiento que apareció</span><span class="old">' + nl(quote(d.pensamiento)) + '</span></p>' +
@@ -1127,18 +1132,49 @@ function addRef(ref) {
   const refs = splitRefs(d.citas);
   const i = refs.map(norm).indexOf(norm(ref));
   if (i >= 0) refs.splice(i, 1); else refs.push(ref);
-  d.citas = refs.join('; ');
-  state.editor.dirty = true;
-  if (!state.editor.id) save(K_DRAFT, d);
-  const inp = $('#f-citas'); if (inp) inp.value = d.citas;
-  document.querySelectorAll('#editor .chip').forEach(c => { const on = refs.map(norm).includes(norm(c.dataset.ref)); c.classList.toggle('on', on); c.setAttribute('aria-pressed', on ? 'true' : 'false'); });
-  updateReadLink();
+  setCitas(refs);
+}
+// Un solo recuadro de pasajes: cada pasaje se toca para leerlo en la Biblia, con × para quitarlo, y abajo se puede escribir uno a mano.
+function citasHeadHTML(refs) {
+  return refs.length ? ICON.book + '<span>Toca un pasaje para leerlo en la Biblia</span>' : '<span>Elige pasajes en «Buscar pasajes por tema» o escríbelos aquí abajo.</span>';
+}
+function citasItemsHTML(refs) {
+  return refs.map(r => '<span class="ref-item"><a class="ref" ' + bibleAttrs(r) + '>' + esc(r) + '</a><button type="button" class="ref-x" data-action="remove-ref" data-ref="' + esc(r) + '" aria-label="Quitar ' + esc(r) + '">×</button></span>').join('');
+}
+function citasBoxHTML(d) {
+  const refs = splitRefs(d.citas);
+  return '<div id="read-links" class="read-links"><p class="read-h">' + citasHeadHTML(refs) + '</p><div class="refs' + (refs.length ? '' : ' hidden') + '">' + citasItemsHTML(refs) + '</div>' +
+    '<div class="ref-add"><input id="f-ref-nuevo" type="text" placeholder="Ej.: Romanos 8:1" autocomplete="off" enterkeyhint="done" aria-label="Escribir un pasaje"><button type="button" class="btn btn-ghost btn-sm" data-action="add-typed-ref">Agregar</button></div></div>';
 }
 function updateReadLink() {
   const box = $('#read-links'); if (!box) return;
   const refs = splitRefs(state.editor.data.citas);
-  box.classList.toggle('hidden', !refs.length);
-  box.querySelector('.refs').innerHTML = refLinks(state.editor.data.citas);
+  box.querySelector('.read-h').innerHTML = citasHeadHTML(refs);
+  const list = box.querySelector('.refs');
+  list.classList.toggle('hidden', !refs.length);
+  list.innerHTML = citasItemsHTML(refs);
+}
+function setCitas(refs) {
+  const d = state.editor.data;
+  d.citas = refs.join('; ');
+  state.editor.dirty = true;
+  if (!state.editor.id) save(K_DRAFT, d);
+  document.querySelectorAll('#editor .chip[data-ref]').forEach(c => { const on = refs.map(norm).includes(norm(c.dataset.ref)); c.classList.toggle('on', on); c.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+  updateReadLink();
+}
+// Agrega lo escrito a mano (puede ser más de uno, separados por punto y coma). Devuelve true si agregó algo.
+function addTypedRefs() {
+  const inp = $('#f-ref-nuevo'); if (!inp || !state.editor) return false;
+  const nuevos = splitRefs(inp.value.replace(/\n/g, ';'));
+  if (!nuevos.length) return false;
+  const refs = splitRefs(state.editor.data.citas);
+  nuevos.forEach(r => { if (!refs.map(norm).includes(norm(r))) refs.push(r); });
+  inp.value = '';
+  setCitas(refs);
+  return true;
+}
+function removeRef(ref) {
+  setCitas(splitRefs(state.editor.data.citas).filter(r => norm(r) !== norm(ref)));
 }
 
 /* ---------- modal y aviso breve ---------- */
@@ -1305,10 +1341,10 @@ document.addEventListener('click', async ev => {
       if (k === 'del') { entries = entries.filter(e => e.id !== id); persist(); markDeleted(id); state.view = 'tab'; render(); toast('Registro eliminado.'); }
       break;
     }
-    case 'ed-next': goStep(state.editor.step + 1); break;
-    case 'ed-prev': goStep(state.editor.step - 1); break;
-    case 'ed-go': goStep(+b.dataset.step); break;
-    case 'ed-save': saveEntry(); break;
+    case 'ed-next': addTypedRefs(); goStep(state.editor.step + 1); break;
+    case 'ed-prev': addTypedRefs(); goStep(state.editor.step - 1); break;
+    case 'ed-go': addTypedRefs(); goStep(+b.dataset.step); break;
+    case 'ed-save': addTypedRefs(); saveEntry(); break;
     case 'ed-reset': state.editor.data = blankDraft(); state.editor.restored = false; save(K_DRAFT, null); renderEditor(); break;
     case 'ed-cancel': {
       const ed = state.editor;
@@ -1322,6 +1358,8 @@ document.addEventListener('click', async ev => {
       break;
     }
     case 'add-ref': addRef(b.dataset.ref); break;
+    case 'remove-ref': removeRef(b.dataset.ref); break;
+    case 'add-typed-ref': if (!addTypedRefs()) { const i = $('#f-ref-nuevo'); if (i) i.focus(); } break;
     case 'help': await modal('Ayuda urgente', helpHTML(), [{ key: 'close', label: 'Volver', cls: 'btn-primary' }]); break;
     case 'share': doShare(); break;
     case 'copy': doCopy(); break;
@@ -1381,7 +1419,10 @@ document.addEventListener('change', ev => {
   }
   if (t.dataset.setting && t.tagName === 'SELECT') { settings[t.dataset.setting] = t.value; if (t.dataset.setting === 'version') settings.versionElegida = true; settingsChanged(); }
 });
-document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && $('#modal').innerHTML) closeModal('__esc'); });
+document.addEventListener('keydown', ev => {
+  if (ev.key === 'Escape' && $('#modal').innerHTML) closeModal('__esc');
+  if (ev.key === 'Enter' && ev.target.id === 'f-ref-nuevo') { ev.preventDefault(); addTypedRefs(); }
+});
 
 /* ---------- aviso para instalar la app (iPhone, Android y cualquier navegador) ---------- */
 let installEvt = null;
