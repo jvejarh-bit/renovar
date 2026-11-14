@@ -1023,7 +1023,7 @@ function viewAjustes() {
   h += '<section class="panel"><h2>Privacidad</h2><p class="muted">' + (cloud.user ? PRIVACIDAD_NUBE : 'Lo que escribes queda guardado solo en este teléfono, dentro de la app. No se envía a ningún servidor. Tu consejero lo ve únicamente cuando tú se lo envías.' + (cloudDisponible() ? ' Si creas tu cuenta, también se guarda en internet.' : '')) + '</p></section>';
   h += '<section class="panel"><h2>Sobre este registro</h2><p class="muted">Sirve para renovar el entendimiento, reemplazando los pensamientos falsos por la verdad. Repítelo cada vez que el pensamiento vuelva: los caminos nuevos se fortalecen con la repetición.</p><div class="refs">' + refLinks('Romanos 12:2; 2 Corintios 10:5') + '</div></section>';
   h += '<button class="btn btn-ghost danger" data-action="wipe">Borrar todos los registros</button>';
-  h += '<p class="foot">Metanoia 2.9</p>';
+  h += '<p class="foot">Metanoia 2.10</p>';
   return h;
 }
 
@@ -1499,7 +1499,7 @@ const FIREBASE_CONFIG = {
 const FIREBASE_V = '10.14.1';
 const K_PEND = 'renovar.pendientes.v1';   // registros con cambios por subir
 const K_TOMBS = 'renovar.borrados.v1';    // registros borrados por avisar
-const PRIVACIDAD_NUBE = 'Tus registros se guardan en este teléfono y en tu cuenta en Firebase (un servicio de Google), en el proyecto de tu consejero. La app solo te deja ver los tuyos, y nadie más puede verlos desde la app.';
+const PRIVACIDAD_NUBE = 'Tus registros se guardan en este teléfono y en la nube (un servicio de Google). La app solo te deja ver los tuyos, y nadie más puede verlos.';
 const cloud = { ready: false, user: null, syncing: false, error: '', api: null, lastFull: 0 };
 
 function cloudDisponible() { return !!(FIREBASE_CONFIG || window.__metanoiaCloud) && storageOK; }
