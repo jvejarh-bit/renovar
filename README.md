@@ -2,10 +2,10 @@
 
 Lleva tu registro en cuatro simples pasos:
 
-1. La situación.
-2. El pensamiento que apareció.
-3. Lo que dice la Palabra.
-4. El pensamiento verdadero con que se reemplaza.
+1. Desencadenante.
+2. ¿Qué me dije?
+3. ¿Qué dice Dios?
+4. Mi nueva respuesta en fe.
 
 Después marca cada vez que el pensamiento vuelve y envía sus registros a su consejero antes de la sesión (Romanos 12:2; 2 Corintios 10:5). Los enlaces a los pasajes abren la Nueva Biblia de las Américas (NBLA); cada persona puede cambiar la versión en Ajustes.
 

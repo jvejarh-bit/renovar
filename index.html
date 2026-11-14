@@ -318,18 +318,18 @@ body.install-on #toast{bottom:calc(88px + var(--install-h,0px) + env(safe-area-i
 
 /* ---------- datos fijos de la guía ---------- */
 const STEPS = [
-  { n: 1, key: 'situacion', short: 'Situación', title: 'La situación',
-    help: '¿Qué pasó? ¿Dónde estabas, con quién y a qué hora?',
+  { n: 1, key: 'situacion', short: 'Detonante', title: 'Desencadenante',
+    help: '¿Qué pasó justo antes? Dónde estabas, con quién y qué ocurrió. La situación no decide tu respuesta: solo saca a la luz lo que hay en el corazón.',
     ph: 'Ej.: Mi jefa revisó mi informe y no dijo nada.' },
-  { n: 2, key: 'pensamiento', short: 'Pensamiento', title: 'El pensamiento que apareció',
-    help: '¿Qué te dijiste por dentro? Escríbelo tal como lo pensaste, sin suavizarlo.',
+  { n: 2, key: 'pensamiento', short: 'Me dije', title: '¿Qué me dije?',
+    help: 'Escribe lo que te dijiste por dentro, tal como lo pensaste, sin suavizarlo. Si puedes, agrega qué querías o qué temías en ese momento.',
     ph: 'Ej.: «No valgo», «me van a abandonar».' },
-  { n: 3, key: 'palabra', short: 'Palabra', title: 'Lo que dice la Palabra',
-    help: '¿Qué dice Dios sobre eso? Anota uno o más pasajes y escribe lo que enseñan, con tus palabras o copiándolo de tu Biblia.',
+  { n: 3, key: 'palabra', short: 'Dice Dios', title: '¿Qué dice Dios?',
+    help: 'Busca en la Biblia lo que Dios dice sobre eso. Anota uno o más pasajes y escribe lo que enseñan, con tus palabras o copiándolo de tu Biblia.',
     ph: 'Ej.: En Cristo no hay condenación para mí; soy una nueva criatura.' },
-  { n: 4, key: 'verdad', short: 'Verdad', title: 'El pensamiento verdadero',
-    help: '¿Con qué verdad reemplazas ese pensamiento? Escríbela en primera persona, tal como te la vas a decir la próxima vez que vuelva.',
-    ph: 'Ej.: Mi valor no depende de lo que opine mi jefa. En Cristo soy aceptado, y puedo preguntarle con calma qué mejorar.' }
+  { n: 4, key: 'verdad', short: 'Respuesta', title: 'Mi nueva respuesta en fe',
+    help: 'Cambia la mentira por la verdad y decide qué harás, confiando en Dios aunque todavía no lo sientas. Escríbela en primera persona y repítela cada vez que el pensamiento vuelva.',
+    ph: 'Ej.: Mi valor no depende de lo que opine mi jefa. En Cristo soy aceptado, y voy a preguntarle con calma qué mejorar.' }
 ];
 
 const TEMAS = [
@@ -841,10 +841,10 @@ function exampleCard() {
   return '<section class="example" aria-label="Ejemplo de registro"><p class="tag">Ejemplo</p>' +
     '<p class="muted">Así se ve un registro completo. Cuando aparezca un pensamiento que te inquieta, anótalo en estos cuatro pasos.</p>' +
     '<ol class="ex-cols">' +
-    '<li><span class="ex-n">1</span><p><span class="ex-l">La situación</span>' + esc(e.situacion) + '</p></li>' +
-    '<li><span class="ex-n">2</span><p><span class="ex-l">El pensamiento que apareció</span><span class="old">' + esc(quote(e.pensamiento)) + '</span></p></li>' +
-    '<li><span class="ex-n">3</span><p><span class="ex-l">Lo que dice la Palabra · ' + esc(e.citas) + '</span>' + esc(e.palabra) + '</p></li>' +
-    '<li><span class="ex-n">4</span><p><span class="ex-l">El pensamiento verdadero</span><span class="truth">' + esc(e.verdad) + '</span></p></li>' +
+    '<li><span class="ex-n">1</span><p><span class="ex-l">Desencadenante</span>' + esc(e.situacion) + '</p></li>' +
+    '<li><span class="ex-n">2</span><p><span class="ex-l">¿Qué me dije?</span><span class="old">' + esc(quote(e.pensamiento)) + '</span></p></li>' +
+    '<li><span class="ex-n">3</span><p><span class="ex-l">¿Qué dice Dios? · ' + esc(e.citas) + '</span>' + esc(e.palabra) + '</p></li>' +
+    '<li><span class="ex-n">4</span><p><span class="ex-l">Mi nueva respuesta en fe</span><span class="truth">' + esc(e.verdad) + '</span></p></li>' +
     '</ol></section>';
 }
 
@@ -894,10 +894,10 @@ function viewDetalle() {
   return '<header class="top"><button class="back" data-action="back">' + ICON.back + '<span>' + (state.tab === 'verdades' ? 'Verdades' : 'Registros') + '</span></button>' +
     '<p class="eyebrow">' + esc(dayLabel(e.fecha)) + ' · ' + timeLabel(e.fecha) + '</p></header>' +
     '<article class="cols" aria-label="Registro">' +
-    col(1, 'La situación', e.situacion ? '<p>' + nl(e.situacion) + '</p>' : none()) +
-    col(2, 'El pensamiento que apareció', '<p class="old">' + nl(quote(e.pensamiento)) + '</p>') +
-    col(3, 'Lo que dice la Palabra', palabra || none()) +
-    col(4, 'El pensamiento verdadero', e.verdad ? '<p class="truth" id="truth-text">' + nl(e.verdad) + '</p>' : none('Todavía no escribes la verdad con que lo reemplazas.'), 'col-truth') +
+    col(1, 'Desencadenante', e.situacion ? '<p>' + nl(e.situacion) + '</p>' : none()) +
+    col(2, '¿Qué me dije?', '<p class="old">' + nl(quote(e.pensamiento)) + '</p>') +
+    col(3, '¿Qué dice Dios?', palabra || none()) +
+    col(4, 'Mi nueva respuesta en fe', e.verdad ? '<p class="truth" id="truth-text">' + nl(e.verdad) + '</p>' : none('Todavía no escribes tu nueva respuesta en fe.'), 'col-truth') +
     '</article>' +
     '<section class="again"><button class="btn btn-primary" data-action="again" data-id="' + esc(e.id) + '">' + ICON.repeat + '<span>Volvió este pensamiento</span></button>' +
     '<p class="again-note">' + (n ? 'Volvió ' + plural(n, 'vez', 'veces') + '. La última, ' + whenLabel(last) + '.' : 'Cuando vuelva, toca el botón y repite la verdad. Los caminos nuevos se fortalecen con la repetición.') + '</p></section>' +
@@ -959,11 +959,11 @@ function buildReport(range) {
   if (!list.length) { L.push('', '(No hay registros en este período.)'); return L.join('\n'); }
   list.forEach((e, i) => {
     L.push('', '— ' + (i + 1) + '. ' + cap(fDay.format(new Date(e.fecha))) + ', ' + timeLabel(e.fecha) + ' —');
-    L.push('1. Situación: ' + (e.situacion ? e.situacion.trim() : '—'));
-    L.push('2. Pensamiento que apareció: ' + quote(e.pensamiento));
+    L.push('1. Desencadenante: ' + (e.situacion ? e.situacion.trim() : '—'));
+    L.push('2. ¿Qué me dije?: ' + quote(e.pensamiento));
     const w = [e.citas ? '(' + e.citas.trim() + ')' : '', e.palabra ? e.palabra.trim() : ''].filter(Boolean).join(' ');
-    L.push('3. Lo que dice la Palabra: ' + (w || '—'));
-    L.push('4. Pensamiento verdadero: ' + (e.verdad ? e.verdad.trim() : '—'));
+    L.push('3. ¿Qué dice Dios?: ' + (w || '—'));
+    L.push('4. Mi nueva respuesta en fe: ' + (e.verdad ? e.verdad.trim() : '—'));
     const n = (e.reps || []).length;
     if (n) L.push('Volvió ' + plural(n, 'vez', 'veces') + '.');
   });
@@ -1021,7 +1021,7 @@ function viewAjustes() {
   h += '<section class="panel"><h2>Privacidad</h2><p class="muted">' + (cloud.user ? PRIVACIDAD_NUBE : 'Lo que escribes queda guardado solo en este teléfono, dentro de la app. No se envía a ningún servidor. Tu consejero lo ve únicamente cuando tú se lo envías.' + (cloudDisponible() ? ' Si creas tu cuenta, también se guarda en internet.' : '')) + '</p></section>';
   h += '<section class="panel"><h2>Sobre este registro</h2><p class="muted">Sirve para renovar el entendimiento, reemplazando los pensamientos falsos por la verdad. Repítelo cada vez que el pensamiento vuelva: los caminos nuevos se fortalecen con la repetición.</p><div class="refs">' + refLinks('Romanos 12:2; 2 Corintios 10:5') + '</div></section>';
   h += '<button class="btn btn-ghost danger" data-action="wipe">Borrar todos los registros</button>';
-  h += '<p class="foot">Metanoia 2.6</p>';
+  h += '<p class="foot">Metanoia 2.7</p>';
   return h;
 }
 
@@ -1087,8 +1087,8 @@ function stepFields(s, d) {
     return themesHTML(d) + '<div class="fld"><span>Pasajes</span>' + citasBoxHTML(d) + '</div>' +
       '<label class="fld" for="f-palabra"><span>Lo que dice</span></label>' + fieldTA(s, d).replace('<label class="sr-only" for="f-palabra">' + esc(s.title) + '</label>', '');
   }
-  const recap = (d.pensamiento || '').trim() ? '<div class="recap"><p><span class="ex-l">El pensamiento que apareció</span><span class="old">' + nl(quote(d.pensamiento)) + '</span></p>' +
-    (((d.citas || '').trim() || (d.palabra || '').trim()) ? '<p><span class="ex-l">Lo que dice la Palabra' + (d.citas ? ' · ' + esc(d.citas) : '') + '</span>' + nl(d.palabra || '') + '</p>' : '') + '</div>' : '';
+  const recap = (d.pensamiento || '').trim() ? '<div class="recap"><p><span class="ex-l">¿Qué me dije?</span><span class="old">' + nl(quote(d.pensamiento)) + '</span></p>' +
+    (((d.citas || '').trim() || (d.palabra || '').trim()) ? '<p><span class="ex-l">¿Qué dice Dios?' + (d.citas ? ' · ' + esc(d.citas) : '') + '</span>' + nl(d.palabra || '') + '</p>' : '') + '</div>' : '';
   return recap + fieldTA(s, d, 'truth-in');
 }
 
@@ -1116,7 +1116,7 @@ function goStep(n) {
 
 function saveEntry() {
   const ed = state.editor, d = ed.data;
-  if (!(d.pensamiento || '').trim()) { goStep(2); setErr('Escribe el pensamiento que apareció para poder guardar el registro.'); return; }
+  if (!(d.pensamiento || '').trim()) { goStep(2); setErr('Escribe lo que te dijiste (paso 2) para poder guardar el registro.'); return; }
   const now = new Date().toISOString();
   const clean = { fecha: d.fecha || now, situacion: (d.situacion || '').trim(), pensamiento: (d.pensamiento || '').trim(), citas: (d.citas || '').trim().replace(/;\s*$/, ''), palabra: (d.palabra || '').trim(), verdad: (d.verdad || '').trim() };
   let id = ed.id;
