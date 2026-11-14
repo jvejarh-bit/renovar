@@ -177,7 +177,7 @@ h1{font:700 30px/1.12 var(--font-ui);letter-spacing:-.015em;margin:0;text-wrap:b
 .panel.urgent{border-left:4px solid var(--danger)}
 .fld{display:grid;gap:6px}
 .fld > span{font:600 14px/1.3 var(--font-ui);color:var(--muted)}
-input[type=text],input[type=tel],input[type=search],input[type=datetime-local],select,textarea{font:17px/1.4 var(--font-ui);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;width:100%;min-height:48px}
+input[type=text],input[type=tel],input[type=email],input[type=password],input[type=search],input[type=datetime-local],select,textarea{font:17px/1.4 var(--font-ui);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;width:100%;min-height:48px}
 input[type=datetime-local]{-webkit-appearance:none;appearance:none;display:block;text-align:left}
 select{-webkit-appearance:none;appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 20px) 50%,calc(100% - 14px) 50%;background-size:6px 6px;background-repeat:no-repeat;padding-right:36px}
 input:focus,select:focus,textarea:focus{outline:3px solid color-mix(in srgb,var(--accent) 45%,transparent);outline-offset:1px;border-color:var(--accent)}
@@ -186,6 +186,9 @@ input:focus,select:focus,textarea:focus{outline:3px solid color-mix(in srgb,var(
 .lines li:first-child{border-top:0}
 .lines a{font:700 17px/1 var(--font-ui);white-space:nowrap;text-decoration:none;font-variant-numeric:tabular-nums}
 .steps-ol{margin:0;padding-left:22px;display:grid;gap:8px;font-size:16px}
+.cloud-ok{color:var(--accent);font-weight:600}
+.cloud-err{color:var(--danger);font-weight:600}
+.row-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .foot{color:var(--muted);font-size:13px;text-align:center}
 
 /* barra inferior */
@@ -513,7 +516,10 @@ function banners() {
   } else if (inFrame) {
     h += '<div class="banner"><p><strong>Vista previa</strong>Aquí puedes probar la app, pero lo que escribas puede borrarse. Para usarla de verdad, ábrela desde su enlace e instálala.</p></div>';
   }
-  if (storageOK && !inFrame && entries.length >= 5) {
+  if (cloudDisponible() && cloud.ready && !cloud.user && !inFrame && !settings.cuentaAvisoCerrado) {
+    h += '<div class="banner"><p><strong>Guarda tus registros en internet</strong>Crea tu cuenta con tu correo. Así, si cambias de teléfono o borras la app, recuperas todo.</p><div class="banner-actions"><button class="link" data-action="go-cuenta">Crear mi cuenta</button><button class="link" data-action="hide-cuenta">Ahora no</button></div></div>';
+  }
+  if (storageOK && !inFrame && !cloud.user && entries.length >= 5) {
     const last = settings.lastBackup ? new Date(settings.lastBackup) : null;
     if (!last || (Date.now() - last.getTime()) > 30 * 864e5) {
       h += '<div class="banner"><p><strong>Guarda una copia de seguridad</strong>Tus registros viven solo en este teléfono. Si borras la app, se pierden.</p><div class="banner-actions"><button class="link" data-action="backup">Guardar copia ahora</button></div></div>';
@@ -695,8 +701,9 @@ function helpHTML() {
 function viewAjustes() {
   let h = '<header class="top"><p class="eyebrow">Metanoia</p><h1>Ajustes y ayuda</h1></header>';
   h += '<section class="panel urgent" id="ayuda"><h2>Ayuda urgente</h2>' + helpHTML() + '</section>';
+  if (cloudDisponible()) h += cuentaHTML();
   h += '<section class="panel"><h2>Tus datos</h2>' +
-    '<p class="muted">Tu nombre y el de tu consejero aparecen al comienzo del mensaje que le envías desde «Enviar», para que sepa de quién es cada registro. El teléfono de tu consejero queda a un toque en «Ayuda urgente». Al tocar un pasaje se abre en la app Biblia (YouVersion) o en bible.com, según lo que elijas abajo. ' + ((CONSEJERO.nombre || CONSEJERO.tel) ? 'Los datos de tu consejero vienen cargados; puedes cambiarlos si lo necesitas. ' : '') + 'Todo queda guardado solo en este teléfono.</p>' +
+    '<p class="muted">Tu nombre y el de tu consejero aparecen al comienzo del mensaje que le envías desde «Enviar», para que sepa de quién es cada registro. El teléfono de tu consejero queda a un toque en «Ayuda urgente». Al tocar un pasaje se abre en la app Biblia (YouVersion) o en bible.com, según lo que elijas abajo. ' + ((CONSEJERO.nombre || CONSEJERO.tel) ? 'Los datos de tu consejero vienen cargados; puedes cambiarlos si lo necesitas. ' : '') + (cloud.user ? 'Se guarda en este teléfono y en tu cuenta.' : 'Todo queda guardado solo en este teléfono.') + '</p>' +
     '<label class="fld" for="s-nombre"><span>Tu nombre</span><input id="s-nombre" type="text" data-setting="nombre" autocomplete="name" value="' + esc(settings.nombre) + '"></label>' +
     '<label class="fld" for="s-cn"><span>Nombre de tu consejero</span><input id="s-cn" type="text" data-setting="consejeroNombre" value="' + esc(settings.consejeroNombre) + '"></label>' +
     '<label class="fld" for="s-ct"><span>Teléfono de tu consejero (opcional)</span><input id="s-ct" type="tel" data-setting="consejeroTel" inputmode="tel" value="' + esc(settings.consejeroTel) + '"></label>' +
@@ -711,10 +718,10 @@ function viewAjustes() {
     (standalone ? '<p class="muted">Ya la estás usando instalada como app.</p>' : '<p class="muted">En este navegador:</p><ol class="steps-ol">' + pasosInstalar(navegador()).map(x => '<li>' + x + '</li>').join('') + '</ol>') +
     '<p class="muted"><strong>iPhone</strong> (Safari, Chrome u otro): abre el enlace, toca Compartir y elige «Añadir a pantalla de inicio». Si no aparece, búscalo en «Ver más».</p>' +
     '<p class="muted"><strong>Android</strong> (Chrome, Samsung Internet u otro): abre el enlace, toca el menú (⋮ o ≡) y elige «Instalar app» o «Añadir a pantalla de inicio».</p></section>';
-  h += '<section class="panel"><h2>Privacidad</h2><p class="muted">Lo que escribes queda guardado solo en este teléfono, dentro de la app. No se envía a ningún servidor. Tu consejero lo ve únicamente cuando tú se lo envías.</p></section>';
+  h += '<section class="panel"><h2>Privacidad</h2><p class="muted">' + (cloud.user ? PRIVACIDAD_NUBE : 'Lo que escribes queda guardado solo en este teléfono, dentro de la app. No se envía a ningún servidor. Tu consejero lo ve únicamente cuando tú se lo envías.' + (cloudDisponible() ? ' Si creas tu cuenta, también se guarda en internet.' : '')) + '</p></section>';
   h += '<section class="panel"><h2>Sobre este registro</h2><p class="muted">Sirve para renovar el entendimiento, reemplazando los pensamientos falsos por la verdad. Repítelo cada vez que el pensamiento vuelva: los caminos nuevos se fortalecen con la repetición.</p><div class="refs">' + refLinks('Romanos 12:2; 2 Corintios 10:5') + '</div></section>';
   h += '<button class="btn btn-ghost danger" data-action="wipe">Borrar todos los registros</button>';
-  h += '<p class="foot">Metanoia 1.9</p>';
+  h += '<p class="foot">Metanoia 2.0</p>';
   return h;
 }
 
@@ -817,7 +824,7 @@ function saveEntry() {
   let id = ed.id;
   if (id) { Object.assign(byId(id), clean, { actualizado: now }); }
   else { id = uid(); entries.push(Object.assign({ id: id, creado: now, actualizado: now, reps: [] }, clean)); save(K_DRAFT, null); }
-  persist();
+  persist(); markDirty(id);
   const wasNew = !ed.id;
   state.tab = state.tab === 'verdades' ? 'verdades' : 'registros';
   state.view = 'detalle'; state.id = id;
@@ -918,8 +925,8 @@ function restoreFrom(text) {
   list.forEach(x => {
     if (!x || (!x.pensamiento && !x.situacion)) return;
     const y = sanitize(x); const cur = byId(y.id);
-    if (!cur) { entries.push(y); added++; }
-    else if (y.actualizado > (cur.actualizado || '')) { Object.assign(cur, y); updated++; }
+    if (!cur) { entries.push(y); added++; markDirty(y.id); }
+    else if (y.actualizado > (cur.actualizado || '')) { Object.assign(cur, y); updated++; markDirty(y.id); }
   });
   const a = data.ajustes || {};
   ['nombre', 'consejeroNombre', 'consejeroTel', 'version'].forEach(k => { if (!settings[k] && typeof a[k] === 'string') settings[k] = a[k]; });
@@ -999,14 +1006,14 @@ document.addEventListener('click', async ev => {
     case 'again': {
       const e = byId(id); if (!e) break;
       e.reps = e.reps || []; e.reps.push(new Date().toISOString()); e.actualizado = new Date().toISOString();
-      persist(); render();
+      persist(); markDirty(e.id); render();
       const tc = document.querySelector('.col-truth'); if (tc) { tc.classList.remove('flash'); void tc.offsetWidth; tc.classList.add('flash'); }
       toast(e.verdad ? 'Anotado. Dite otra vez la verdad, despacio.' : 'Anotado. Cuando puedas, escribe la verdad en el paso 4.');
       break;
     }
     case 'delete': {
       const k = await modal('¿Eliminar este registro?', '<p class="muted">No se puede deshacer.</p>', [{ key: 'del', label: 'Eliminar', cls: 'btn-primary' }, { key: 'no', label: 'Cancelar' }]);
-      if (k === 'del') { entries = entries.filter(e => e.id !== id); persist(); state.view = 'tab'; render(); toast('Registro eliminado.'); }
+      if (k === 'del') { entries = entries.filter(e => e.id !== id); persist(); markDeleted(id); state.view = 'tab'; render(); toast('Registro eliminado.'); }
       break;
     }
     case 'ed-next': goStep(state.editor.step + 1); break;
@@ -1032,6 +1039,12 @@ document.addEventListener('click', async ev => {
     case 'backup': doBackup(); break;
     case 'go-install': goTab('ajustes', true); setTimeout(() => { const el = $('#instalar'); if (el) el.scrollIntoView(); }, 0); break;
     case 'hide-install': settings.installHidden = true; saveSettings(); render(); break;
+    case 'go-cuenta': goTab('ajustes', true); setTimeout(() => { const el = $('#cuenta'); if (el) el.scrollIntoView(); }, 0); break;
+    case 'hide-cuenta': settings.cuentaAvisoCerrado = true; saveSettings(); render(); break;
+    case 'cuenta-entrar': case 'cuenta-crear': cuentaIngresar(a === 'cuenta-crear'); break;
+    case 'cuenta-olvide': cuentaOlvide(); break;
+    case 'cuenta-sync': syncNow(true); break;
+    case 'cuenta-salir': cuentaSalir(); break;
     case 'install-close': try { sessionStorage.setItem(K_INSTALL, '1'); } catch (e) {} renderInstall(); break;
     case 'install-now': {
       if (!installEvt) break;
@@ -1043,7 +1056,7 @@ document.addEventListener('click', async ev => {
     }
     case 'wipe': {
       const k = await modal('¿Borrar todos los registros?', '<p class="muted">Se borrarán ' + plural(entries.length, 'registro', 'registros') + ' de este teléfono. Si quieres conservarlos, guarda antes una copia de seguridad.</p>', [{ key: 'del', label: 'Borrar todo', cls: 'btn-primary' }, { key: 'no', label: 'Cancelar' }]);
-      if (k === 'del') { entries = []; persist(); save(K_DRAFT, null); render(); toast('Se borraron todos los registros.'); }
+      if (k === 'del') { const ids = entries.map(e => e.id); entries = []; persist(); ids.forEach(markDeleted); save(K_DRAFT, null); render(); toast('Se borraron todos los registros' + (cloud.user ? ', también en tu cuenta.' : '.')); }
       break;
     }
   }
@@ -1064,7 +1077,7 @@ document.addEventListener('input', ev => {
   if (t.dataset.setting) {
     settings[t.dataset.setting] = t.value;
     if (t.dataset.setting === 'consejeroNombre' || t.dataset.setting === 'consejeroTel') settings.consejeroEditado = true;
-    saveSettings();
+    settingsChanged();
     const r = $('#report'); if (r) r.textContent = buildReport(state.range);
     return;
   }
@@ -1077,7 +1090,7 @@ document.addEventListener('change', ev => {
     const fr = new FileReader(); fr.onload = () => restoreFrom(String(fr.result)); fr.readAsText(t.files[0]); t.value = '';
     return;
   }
-  if (t.dataset.setting && t.tagName === 'SELECT') { settings[t.dataset.setting] = t.value; if (t.dataset.setting === 'version') settings.versionElegida = true; saveSettings(); }
+  if (t.dataset.setting && t.tagName === 'SELECT') { settings[t.dataset.setting] = t.value; if (t.dataset.setting === 'version') settings.versionElegida = true; settingsChanged(); }
 });
 document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && $('#modal').innerHTML) closeModal('__esc'); });
 
@@ -1137,11 +1150,208 @@ window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); instal
 window.addEventListener('appinstalled', () => { installEvt = null; try { sessionStorage.setItem(K_INSTALL, '1'); } catch (e) {} renderInstall(); toast('Listo: Metanoia quedó instalada. Ábrela desde su ícono.'); });
 window.addEventListener('resize', () => { if (!$('#install').hidden) renderInstall(); });
 
+/* ---------- respaldo en internet (Firebase) ---------- */
+// Datos del proyecto Firebase de la consejería. Sin ellos, la app funciona solo en el teléfono.
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyClItAFKDBxETczSuXEOf4UmoaNo90UI6Q",
+  authDomain: "metanoia-32d87.firebaseapp.com",
+  projectId: "metanoia-32d87",
+  storageBucket: "metanoia-32d87.firebasestorage.app",
+  messagingSenderId: "199123925114",
+  appId: "1:199123925114:web:5ff9bf355f899bfa4423c3"
+};
+const FIREBASE_V = '10.14.1';
+const K_PEND = 'renovar.pendientes.v1';   // registros con cambios por subir
+const K_TOMBS = 'renovar.borrados.v1';    // registros borrados por avisar
+const PRIVACIDAD_NUBE = 'Tus registros se guardan en este teléfono y en tu cuenta en Firebase (un servicio de Google), en el proyecto de tu consejero. La app solo te deja ver los tuyos, y nadie más puede verlos desde la app. Aun así, como administrador del proyecto, tu consejero podría acceder a ellos.';
+const cloud = { ready: false, user: null, syncing: false, error: '', api: null, lastFull: 0 };
+
+function cloudDisponible() { return !!(FIREBASE_CONFIG || window.__metanoiaCloud) && storageOK; }
+async function cloudApi() {
+  if (cloud.api) return cloud.api;
+  if (window.__metanoiaCloud) return (cloud.api = window.__metanoiaCloud); // solo para pruebas
+  if (!FIREBASE_CONFIG) return null;
+  const B = 'https://www.gstatic.com/firebasejs/' + FIREBASE_V + '/';
+  const [fa, fau, ffs] = await Promise.all([import(B + 'firebase-app.js'), import(B + 'firebase-auth.js'), import(B + 'firebase-firestore-lite.js')]);
+  const app = fa.initializeApp(FIREBASE_CONFIG);
+  const auth = fau.getAuth(app); auth.languageCode = 'es';
+  const db = ffs.getFirestore(app);
+  cloud.api = {
+    onUser: cb => fau.onAuthStateChanged(auth, u => cb(u ? { uid: u.uid, email: u.email } : null)),
+    signIn: (e, p) => fau.signInWithEmailAndPassword(auth, e, p),
+    signUp: (e, p) => fau.createUserWithEmailAndPassword(auth, e, p),
+    reset: e => fau.sendPasswordResetEmail(auth, e),
+    signOut: () => fau.signOut(auth),
+    pull: async uid => {
+      const snap = await ffs.getDocs(ffs.collection(db, 'usuarios', uid, 'registros'));
+      const registros = []; snap.forEach(d => registros.push(d.data()));
+      const u = await ffs.getDoc(ffs.doc(db, 'usuarios', uid));
+      return { registros: registros, ajustes: u.exists() ? (u.data().ajustes || null) : null };
+    },
+    push: async (uid, items, ajustes) => {
+      for (let i = 0; i < Math.max(items.length, 1); i += 400) {
+        const b = ffs.writeBatch(db);
+        items.slice(i, i + 400).forEach(x => b.set(ffs.doc(db, 'usuarios', uid, 'registros', x.id), x));
+        if (i === 0 && ajustes) b.set(ffs.doc(db, 'usuarios', uid), { ajustes: ajustes }, { merge: true });
+        await b.commit();
+      }
+    }
+  };
+  return cloud.api;
+}
+
+function markDirty(id) { const p = load(K_PEND, []); if (!p.includes(id)) { p.push(id); save(K_PEND, p); } scheduleSync(); }
+function markDeleted(id) { const t = load(K_TOMBS, {}); t[id] = new Date().toISOString(); save(K_TOMBS, t); markDirty(id); }
+function settingsChanged() { settings.ajustesActualizado = new Date().toISOString(); saveSettings(); scheduleSync(); }
+let syncTimer = null;
+function scheduleSync() { if (!cloud.user) return; clearTimeout(syncTimer); syncTimer = setTimeout(() => syncNow(false), 1200); }
+
+const AJUSTES_NUBE = ['nombre', 'consejeroNombre', 'consejeroTel', 'consejeroEditado', 'version', 'versionElegida', 'biblia'];
+function ajustesParaNube() { const a = { actualizado: settings.ajustesActualizado || '' }; AJUSTES_NUBE.forEach(k => { if (settings[k] !== undefined) a[k] = settings[k]; }); return a; }
+function errorTexto(e) {
+  const c = (e && e.code) || '';
+  if (/invalid-email/.test(c)) return 'Ese correo no es válido.';
+  if (/invalid-credential|wrong-password|user-not-found|invalid-login/.test(c)) return 'El correo o la contraseña no coinciden.';
+  if (/email-already-in-use/.test(c)) return 'Ya existe una cuenta con ese correo. Toca «Entrar».';
+  if (/weak-password/.test(c)) return 'La contraseña debe tener al menos 6 caracteres.';
+  if (/too-many-requests/.test(c)) return 'Demasiados intentos. Espera unos minutos y vuelve a intentarlo.';
+  if (/network|unavailable|failed-precondition|offline/.test(c) || !navigator.onLine) return 'Sin conexión. Se guardará cuando vuelva internet.';
+  if (/permission-denied/.test(c)) return 'El servicio rechazó el acceso. Avísale a tu consejero.';
+  return 'No se pudo conectar. Inténtalo de nuevo en un momento.';
+}
+
+async function syncNow(full) {
+  if (!cloud.user || cloud.syncing) return;
+  const api = await cloudApi().catch(() => null); if (!api) return;
+  cloud.syncing = true; cloud.error = ''; refreshCuenta();
+  let cambiosLocales = false;
+  try {
+    const uid = cloud.user.uid;
+    const tombs = load(K_TOMBS, {});
+    const pend = new Set(load(K_PEND, []));
+    if (full) {
+      const r = await api.pull(uid);
+      const remote = new Map(r.registros.map(x => [x.id, x]));
+      remote.forEach((x, id) => {
+        const cur = byId(id);
+        if (x.borrado) {
+          if (cur && (cur.actualizado || '') <= (x.actualizado || '')) { entries = entries.filter(e => e.id !== id); cambiosLocales = true; }
+          return;
+        }
+        if (tombs[id] && tombs[id] >= (x.actualizado || '')) return; // se borró aquí después
+        const y = sanitize(x);
+        if (!cur) { entries.push(y); cambiosLocales = true; }
+        else if ((y.actualizado || '') > (cur.actualizado || '')) { Object.assign(cur, y); cambiosLocales = true; }
+      });
+      entries.forEach(e => { const x = remote.get(e.id); if (!x || x.borrado || (e.actualizado || '') > (x.actualizado || '')) pend.add(e.id); });
+      Object.keys(tombs).forEach(id => pend.add(id));
+      const ra = r.ajustes;
+      if (ra && (ra.actualizado || '') > (settings.ajustesActualizado || '')) {
+        AJUSTES_NUBE.forEach(k => { if (ra[k] !== undefined) settings[k] = ra[k]; });
+        settings.ajustesActualizado = ra.actualizado; cambiosLocales = true;
+      }
+      if (cambiosLocales) persist();
+    }
+    const ids = [...pend];
+    const items = ids.map(id => { const e = byId(id); if (e) return Object.assign(sanitize(e), { borrado: false }); if (tombs[id]) return { id: id, borrado: true, actualizado: tombs[id] }; return null; }).filter(Boolean);
+    await api.push(uid, items, ajustesParaNube());
+    // quita de la lista solo lo que se subió (pudo haber cambios nuevos mientras tanto)
+    save(K_PEND, load(K_PEND, []).filter(id => !ids.includes(id)));
+    const t2 = load(K_TOMBS, {}); ids.forEach(id => { if (t2[id] === tombs[id]) delete t2[id]; }); save(K_TOMBS, t2);
+    settings.lastSync = new Date().toISOString();
+    if (full) cloud.lastFull = Date.now();
+  } catch (e) {
+    cloud.error = errorTexto(e);
+  } finally {
+    cloud.syncing = false; saveSettings();
+    const a = document.activeElement;
+    const escribiendo = a && /INPUT|TEXTAREA|SELECT/.test(a.tagName);
+    if (cambiosLocales && !state.editor && !escribiendo) render(); else refreshCuenta();
+  }
+}
+
+function estadoCuenta() {
+  if (cloud.syncing) return '<span>Guardando…</span>';
+  if (cloud.error) return '<span class="cloud-err">' + esc(cloud.error) + '</span>';
+  if (settings.lastSync) return '<span class="cloud-ok">✓ Guardado en tu cuenta</span> · ' + esc(whenLabel(settings.lastSync));
+  return '<span>Aún no se ha guardado.</span>';
+}
+function refreshCuenta() { const st = $('#cuenta-estado'); if (st) st.innerHTML = estadoCuenta(); }
+function cuentaHTML() {
+  if (!cloud.ready) return '<section class="panel" id="cuenta"><h2>Tu cuenta</h2><p class="muted">' + (navigator.onLine ? 'Cargando…' : 'Necesitas internet para entrar a tu cuenta.') + '</p></section>';
+  if (cloud.user) {
+    return '<section class="panel" id="cuenta"><h2>Tu cuenta</h2>' +
+      '<p class="muted">Entraste como <strong>' + esc(cloud.user.email || '') + '</strong>. Tus registros se guardan en internet cada vez que escribes, y en cualquier teléfono donde entres con esta cuenta vas a ver los mismos.</p>' +
+      '<p id="cuenta-estado" class="muted">' + estadoCuenta() + '</p>' +
+      '<div class="row-btns"><button class="btn btn-ghost" data-action="cuenta-sync">Actualizar ahora</button><button class="btn btn-ghost" data-action="cuenta-salir">Cerrar sesión</button></div></section>';
+  }
+  return '<section class="panel" id="cuenta"><h2>Guarda tus registros en internet</h2>' +
+    '<p class="muted">Crea una cuenta con tu correo y una contraseña. Si cambias de teléfono o borras la app, entras con los mismos datos y recuperas todo.</p>' +
+    '<label class="fld" for="c-email"><span>Correo</span><input id="c-email" type="email" autocomplete="username" inputmode="email" autocapitalize="off" spellcheck="false"></label>' +
+    '<label class="fld" for="c-pass"><span>Contraseña (al menos 6 caracteres)</span><input id="c-pass" type="password" autocomplete="current-password"></label>' +
+    '<p class="err" id="c-err" role="alert"></p>' +
+    '<div class="row-btns"><button class="btn btn-primary" data-action="cuenta-entrar">Entrar</button><button class="btn btn-ghost" data-action="cuenta-crear">Crear cuenta</button></div>' +
+    '<button class="link" data-action="cuenta-olvide">Olvidé mi contraseña</button>' +
+    '<p class="help-sm">' + PRIVACIDAD_NUBE + '</p></section>';
+}
+async function cuentaIngresar(crear) {
+  const email = ($('#c-email') || {}).value || '', pass = ($('#c-pass') || {}).value || '';
+  const err = $('#c-err');
+  const fail = m => { if (err) err.textContent = m; };
+  if (!email.trim() || !pass) { fail('Escribe tu correo y tu contraseña.'); return; }
+  const api = await cloudApi().catch(() => null); if (!api) { fail('Necesitas internet para entrar a tu cuenta.'); return; }
+  fail(''); document.querySelectorAll('[data-action^="cuenta-"]').forEach(b => b.disabled = true);
+  try {
+    await (crear ? api.signUp(email.trim(), pass) : api.signIn(email.trim(), pass));
+    toast(crear ? 'Cuenta creada. Tus registros se están guardando en internet.' : 'Entraste a tu cuenta. Trayendo tus registros…');
+  } catch (e) {
+    fail(errorTexto(e));
+    document.querySelectorAll('[data-action^="cuenta-"]').forEach(b => b.disabled = false);
+  }
+}
+async function cuentaOlvide() {
+  const email = (($('#c-email') || {}).value || '').trim(); const err = $('#c-err');
+  if (!email) { if (err) err.textContent = 'Escribe tu correo arriba y vuelve a tocar «Olvidé mi contraseña».'; return; }
+  const api = await cloudApi().catch(() => null); if (!api) return;
+  try { await api.reset(email); toast('Te enviamos un correo para crear una contraseña nueva. Revisa también la carpeta de spam.'); }
+  catch (e) { if (err) err.textContent = errorTexto(e); }
+}
+async function cuentaSalir() {
+  const k = await modal('¿Cerrar sesión?', '<p class="muted">Tus registros siguen guardados en tu cuenta. Puedes dejarlos también en este teléfono o borrarlos de aquí (por ejemplo, si el teléfono no es tuyo).</p>',
+    [{ key: 'salir', label: 'Cerrar sesión', cls: 'btn-primary' }, { key: 'borrar', label: 'Cerrar sesión y borrar de este teléfono' }, { key: 'no', label: 'Cancelar' }]);
+  if (k !== 'salir' && k !== 'borrar') return;
+  if (load(K_PEND, []).length) await syncNow(false);
+  const api = await cloudApi().catch(() => null);
+  try { if (api) await api.signOut(); } catch (e) {}
+  cloud.user = null; settings.lastSync = null;
+  if (k === 'borrar') { entries = []; persist(); save(K_DRAFT, null); }
+  save(K_PEND, []); save(K_TOMBS, {}); saveSettings();
+  render(); toast(k === 'borrar' ? 'Sesión cerrada y registros quitados de este teléfono.' : 'Sesión cerrada.');
+}
+async function initCloud() {
+  if (!cloudDisponible() || inFrame) return;
+  let api = null;
+  try { api = await cloudApi(); } catch (e) { cloud.error = errorTexto(e); }
+  if (!api) { if (state.tab === 'ajustes') render(); return; }
+  cloud.ready = true;
+  let primera = true;
+  api.onUser(u => {
+    const antes = cloud.user ? cloud.user.uid : null;
+    cloud.user = u;
+    if (u && u.uid !== antes) syncNow(true);
+    if (primera || (u ? u.uid : null) !== antes) { primera = false; if (!state.editor) render(); }
+  });
+  // Al volver a la app, trae lo que se haya escrito en otro teléfono
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && cloud.user && Date.now() - cloud.lastFull > 60000) syncNow(true); });
+  window.addEventListener('online', () => { if (cloud.user) syncNow(true); });
+}
+
 /* ---------- inicio ---------- */
 const h0 = location.hash.slice(1);
 state.tab = TABS.includes(h0) ? h0 : 'registros';
 render();
 renderInstall();
+initCloud();
 
 if (!inFrame) {
   if (navigator.storage && navigator.storage.persist) { navigator.storage.persist().catch(() => {}); }
