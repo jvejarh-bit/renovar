@@ -939,7 +939,7 @@ function viewVerdades() {
 function rangeInfo(range) {
   const now = new Date();
   if (range === 'todo') return { from: null, label: 'Todos los registros' };
-  if (range === 'ultimo' && settings.lastSent) return { from: new Date(settings.lastSent), byUpdate: true, label: 'Desde el último envío (' + fShort.format(new Date(settings.lastSent)) + ')' };
+  if (range === 'ultimo' && settings.lastSent) return { from: new Date(settings.lastSent), byUpdate: true, label: 'Desde el último (' + fShort.format(new Date(settings.lastSent)) + ')' };
   const days = range === '30' ? 30 : 7;
   const from = new Date(now); from.setHours(0, 0, 0, 0); from.setDate(from.getDate() - (days - 1));
   return { from: from, label: 'Últimos ' + days + ' días (' + fShort.format(from) + ' – ' + fShort.format(now) + ')' };
@@ -974,7 +974,7 @@ function buildReport(range) {
 
 function viewEnviar() {
   if (state.range === 'ultimo' && !settings.lastSent) state.range = '7';
-  const opts = [['ultimo', 'Desde el último envío'], ['7', 'Últimos 7 días'], ['30', 'Últimos 30 días'], ['todo', 'Todos']];
+  const opts = [['ultimo', 'Desde el último'], ['7', 'Últimos 7 días'], ['30', 'Últimos 30 días'], ['todo', 'Todos']];
   const n = entriesInRange(state.range).length;
   let h = '<header class="top"><p class="eyebrow">Metanoia · para la próxima sesión</p><h1>Enviar a mi consejero</h1><p class="lead">Elige qué registros enviar. Se abrirá el menú Compartir para mandarlos por WhatsApp, correo o Mensajes.</p></header>';
   h += '<fieldset class="seg"><legend class="sr-only">Qué registros enviar</legend>' + opts.map(([v, l]) => {
@@ -1023,7 +1023,7 @@ function viewAjustes() {
   h += '<section class="panel"><h2>Privacidad</h2><p class="muted">' + (cloud.user ? PRIVACIDAD_NUBE : 'Lo que escribes queda guardado solo en este teléfono, dentro de la app. No se envía a ningún servidor. Tu consejero lo ve únicamente cuando tú se lo envías.' + (cloudDisponible() ? ' Si creas tu cuenta, también se guarda en internet.' : '')) + '</p></section>';
   h += '<section class="panel"><h2>Sobre este registro</h2><p class="muted">Sirve para renovar el entendimiento, reemplazando los pensamientos falsos por la verdad. Repítelo cada vez que el pensamiento vuelva: los caminos nuevos se fortalecen con la repetición.</p><div class="refs">' + refLinks('Romanos 12:2; 2 Corintios 10:5') + '</div></section>';
   h += '<button class="btn btn-ghost danger" data-action="wipe">Borrar todos los registros</button>';
-  h += '<p class="foot">Metanoia 2.8</p>';
+  h += '<p class="foot">Metanoia 2.9</p>';
   return h;
 }
 
@@ -1211,7 +1211,7 @@ async function copyText(text) {
 function markSent() { settings.lastSent = new Date().toISOString(); saveSettings(); state.range = 'ultimo'; }
 async function doShare() {
   const text = buildReport(state.range);
-  try { await navigator.share({ title: 'Self-Talk Log', text: text }); markSent(); render(); toast('Listo. La próxima vez, «Desde el último envío» empezará aquí.'); }
+  try { await navigator.share({ title: 'Self-Talk Log', text: text }); markSent(); render(); toast('Listo. La próxima vez, «Desde el último» empezará aquí.'); }
   catch (err) { if (err && err.name === 'AbortError') return; doCopy(); }
 }
 async function doCopy() {
