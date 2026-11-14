@@ -66,6 +66,8 @@ p{margin:0}
 .top{display:grid;gap:4px}
 .eyebrow{font:600 13px/1.3 var(--font-ui);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
 h1{font:700 30px/1.12 var(--font-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+/* título de la portada: siempre en una sola línea, se achica según el ancho del teléfono */
+.h1-app{white-space:nowrap;font-size:clamp(18px,6.2vw,32px);letter-spacing:-.02em}
 .lead{color:var(--muted);font-size:16px;max-width:60ch}
 .sec-h{font:600 13px/1.3 var(--font-ui);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
 
@@ -307,7 +309,7 @@ body.install-on #toast{bottom:calc(88px + var(--install-h,0px) + env(safe-area-i
   <a href="#enviar" data-tab="enviar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 3 10.5 13.5"/><path d="m21 3-6.5 18-4-7.5L3 9.5z"/></svg><span>Enviar</span></a>
   <a href="#ajustes" data-tab="ajustes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><span>Ajustes</span></a>
 </nav>
-<div id="editor" aria-label="Nuevo registro"></div>
+<div id="editor" aria-label="Registrando"></div>
 <div id="modal"></div>
 <div id="install" class="install" role="region" aria-label="Instalar Metanoia" hidden></div>
 <div id="toast" role="status" aria-live="polite"></div>
@@ -870,7 +872,7 @@ function groupsHTML() {
 }
 
 function viewRegistros() {
-  let h = '<header class="top"><p class="eyebrow">Metanoia · Romanos 12:2</p><h1>Self-Talk Log</h1></header>';
+  let h = '<header class="top"><p class="eyebrow">Metanoia · Romanos 12:2</p><h1 class="h1-app">Registro de Dialogo Interno</h1></header>';
   h += banners();
   h += '<button class="btn btn-primary btn-block" data-action="new">' + ICON.plus + '<span>Nuevo registro</span></button>';
   h += weekStrip();
@@ -1021,7 +1023,7 @@ function viewAjustes() {
   h += '<section class="panel"><h2>Privacidad</h2><p class="muted">' + (cloud.user ? PRIVACIDAD_NUBE : 'Lo que escribes queda guardado solo en este teléfono, dentro de la app. No se envía a ningún servidor. Tu consejero lo ve únicamente cuando tú se lo envías.' + (cloudDisponible() ? ' Si creas tu cuenta, también se guarda en internet.' : '')) + '</p></section>';
   h += '<section class="panel"><h2>Sobre este registro</h2><p class="muted">Sirve para renovar el entendimiento, reemplazando los pensamientos falsos por la verdad. Repítelo cada vez que el pensamiento vuelva: los caminos nuevos se fortalecen con la repetición.</p><div class="refs">' + refLinks('Romanos 12:2; 2 Corintios 10:5') + '</div></section>';
   h += '<button class="btn btn-ghost danger" data-action="wipe">Borrar todos los registros</button>';
-  h += '<p class="foot">Metanoia 2.7</p>';
+  h += '<p class="foot">Metanoia 2.8</p>';
   return h;
 }
 
@@ -1057,7 +1059,7 @@ function openEdit(id, step) {
 }
 function showEditor() {
   document.body.classList.add('editing');
-  $('#editor').setAttribute('aria-label', state.editor.id ? 'Editar registro' : 'Nuevo registro');
+  $('#editor').setAttribute('aria-label', state.editor.id ? 'Editando' : 'Registrando');
   renderEditor();
 }
 function closeEditor() {
@@ -1094,7 +1096,7 @@ function stepFields(s, d) {
 
 function renderEditor() {
   const ed = state.editor, s = STEPS[ed.step - 1], d = ed.data;
-  $('#editor').innerHTML = '<div class="ed-bar"><header class="ed-top"><button type="button" class="ed-cancel" data-action="ed-cancel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>Cancelar</button><p class="ed-title">' + (ed.id ? 'Editar registro' : 'Nuevo registro') + '</p><p class="ed-count" aria-label="Paso ' + ed.step + ' de 4">Paso ' + ed.step + '/4</p></header></div>' +
+  $('#editor').innerHTML = '<div class="ed-bar"><header class="ed-top"><button type="button" class="ed-cancel" data-action="ed-cancel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>Cancelar</button><p class="ed-title">' + (ed.id ? 'Editando' : 'Registrando') + '</p><p class="ed-count" aria-label="Paso ' + ed.step + ' de 4">Paso ' + ed.step + '/4</p></header></div>' +
     '<div class="ed">' +
     '<ol class="steps" aria-label="Pasos">' + STEPS.map(x => '<li><button type="button" data-action="ed-go" data-step="' + x.n + '" class="' + (x.n === ed.step ? 'cur ' : '') + (stepFilled(d, x) ? 'done' : '') + '"' + (x.n === ed.step ? ' aria-current="step"' : '') + '><span class="bar"></span><span>' + x.short + '</span></button></li>').join('') + '</ol>' +
     (ed.restored && ed.step === 1 ? '<p class="note">Recuperamos el borrador que dejaste a medias. <button class="link" data-action="ed-reset">Empezar de cero</button></p>' : '') +
