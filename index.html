@@ -234,6 +234,12 @@ textarea.truth-in{font-family:var(--font-truth);font-size:20px}
 .themes-all > summary::after{content:"+";font-size:20px;line-height:1}
 .themes-all[open] > summary::after{content:"–"}
 .themes{border-top:1px solid var(--line)}
+.themes .chips{display:grid;gap:8px}
+.chip.pick{display:grid;gap:2px;text-align:left;border-radius:12px;padding:10px 14px;width:100%}
+.pick-ref{font-weight:700;font-size:15px}
+.pick-txt{font-size:14px;color:var(--muted);line-height:1.3}
+.chip.pick.on .pick-txt{color:var(--accent)}
+.chip.pick.on .pick-ref::after{content:"  ✓"}
 .themes details{border-bottom:1px solid var(--line)}
 .themes summary{list-style:none;cursor:pointer;padding:13px 2px;font-weight:600;font-size:16px;display:flex;justify-content:space-between;gap:12px}
 .themes summary::-webkit-details-marker{display:none}
@@ -326,6 +332,114 @@ const TEMAS = [
   ['El cuerpo', ['1 Corintios 6:19-20', 'Romanos 12:1', '1 Reyes 19:1-8', 'Marcos 6:31']],
   ['Amor y servicio', ['1 Juan 4:18', 'Filipenses 2:3-4', 'Marcos 10:42-45', 'Efesios 4:15']]
 ];
+
+// Frase breve (resumen propio, no cita) para reconocer cada pasaje en la lista por tema
+const RESUMEN = {
+ "1 Corintios 10:13": "Con la prueba, Dios da también la salida",
+ "1 Corintios 3:6-7": "Uno planta, otro riega; Dios da el crecimiento",
+ "1 Corintios 6:11": "Lavados, santificados y justificados",
+ "1 Corintios 6:19-20": "El cuerpo es templo del Espíritu Santo",
+ "1 Juan 1:9": "Si confesamos, Él es fiel para perdonar",
+ "1 Juan 4:18": "El amor perfecto echa fuera el temor",
+ "1 Pedro 3:14-15": "No temer; honrar a Cristo como Señor",
+ "1 Pedro 5:6-7": "Echar toda la ansiedad sobre Él",
+ "1 Reyes 19:1-8": "Elías agotado: Dios le da sueño y comida",
+ "2 Corintios 10:5": "Llevar cautivo todo pensamiento a Cristo",
+ "2 Corintios 12:9-10": "Su poder se perfecciona en mi debilidad",
+ "2 Corintios 4:16": "Por dentro, Dios me renueva cada día",
+ "2 Corintios 4:16-18": "Una aflicción breve, una gloria eterna",
+ "2 Corintios 5:17": "En Cristo soy una nueva criatura",
+ "Colosenses 2:8": "Que nadie te engañe con ideas vacías",
+ "Colosenses 3:23": "Trabajar de corazón, como para el Señor",
+ "Deuteronomio 29:29": "Lo secreto es de Dios; lo revelado, nuestro",
+ "Eclesiastés 7:21-22": "Yo también he hablado mal de otros",
+ "Efesios 4:15": "Hablar la verdad con amor",
+ "Efesios 4:25-27": "Que el enojo no dure hasta la noche",
+ "Efesios 4:31-32": "Perdonar como Dios nos perdonó en Cristo",
+ "Filipenses 1:6": "Dios terminará la obra que comenzó en mí",
+ "Filipenses 2:3-4": "Considerar a los demás como superiores",
+ "Filipenses 4:6-7": "Orar en vez de afanarse; la paz de Dios",
+ "Filipenses 4:8": "Pensar en lo verdadero, justo y puro",
+ "Gálatas 1:10": "¿Agradar a la gente o a Dios?",
+ "Gálatas 2:16": "Justificados por la fe en Cristo, no por obras",
+ "Gálatas 3:13": "Cristo cargó nuestra maldición",
+ "Génesis 4:6-7": "Si haces lo bueno, podrás levantar el rostro",
+ "Génesis 50:20": "Lo que fue para mal, Dios lo usó para bien",
+ "Hebreos 13:5": "Dios no me dejará ni me abandonará",
+ "Hebreos 13:6": "El Señor me ayuda; no temeré",
+ "Isaías 1:18": "Pecados rojos, hechos blancos como la nieve",
+ "Isaías 26:3": "Paz completa para quien confía en Dios",
+ "Isaías 51:7": "No temer las ofensas de la gente",
+ "Isaías 8:12-13": "Temer al Señor, no lo que otros temen",
+ "Josué 1:8": "Meditar la Palabra de día y de noche",
+ "Lamentaciones 3:22-23": "Sus misericordias son nuevas cada mañana",
+ "Lamentaciones 3:37": "Nada pasa sin que el Señor lo permita",
+ "Lamentaciones 3:37-38": "Nada sucede sin que Dios lo permita",
+ "Lucas 12:22-34": "Las aves y los lirios: Dios cuida",
+ "Lucas 12:32": "Al Padre le agrada darnos el reino",
+ "Lucas 22:42": "Que no se haga mi voluntad, sino la tuya",
+ "Lucas 7:36-50": "La mujer que mucho fue perdonada y mucho amó",
+ "Marcos 10:42-45": "El que quiera ser grande, que sirva",
+ "Marcos 6:31": "Vengan aparte a descansar un poco",
+ "Mateo 10:29-31": "Hasta mis cabellos están contados",
+ "Mateo 11:28-30": "Vengan a mí y encontrarán descanso",
+ "Mateo 18:15": "Hablar a solas con quien te ofendió",
+ "Mateo 18:23-33": "El siervo perdonado que no quiso perdonar",
+ "Mateo 5:23-24": "Reconcíliate primero con tu hermano",
+ "Mateo 6:25-34": "No se preocupen: el Padre provee",
+ "Mateo 6:27": "Afanarse no añade ni una hora de vida",
+ "Mateo 6:34": "Cada día trae su propio afán",
+ "Mateo 6:8": "El Padre sabe lo que necesito",
+ "Mateo 8:23-27": "Jesús calma la tormenta",
+ "Proverbios 14:30": "La envidia carcome los huesos",
+ "Proverbios 16:9": "Yo hago planes, Dios dirige mis pasos",
+ "Proverbios 19:21": "El propósito del Señor es el que permanece",
+ "Proverbios 24:30-34": "El campo descuidado del perezoso",
+ "Proverbios 28:1": "El culpable huye sin que nadie lo persiga",
+ "Proverbios 29:25": "El temor al hombre es una trampa",
+ "Romanos 12:1": "Presentar el cuerpo como sacrificio vivo",
+ "Romanos 12:15": "Alegrarse con los que se alegran",
+ "Romanos 12:18-19": "Vivir en paz; la venganza es de Dios",
+ "Romanos 12:2": "Transformados al renovar la mente",
+ "Romanos 15:13": "El Dios de esperanza da gozo y paz",
+ "Romanos 6:16": "Somos esclavos de lo que obedecemos",
+ "Romanos 6:2-14": "Muertos al pecado, vivos para Dios",
+ "Romanos 8:1": "No hay condenación para los que están en Cristo",
+ "Romanos 8:15-17": "Hijos de Dios, no esclavos del temor",
+ "Romanos 8:28-29": "Dios obra todo para bien de los suyos",
+ "Romanos 8:31": "Si Dios está con nosotros, ¿quién contra nosotros?",
+ "Romanos 8:31-39": "Nada nos separa del amor de Dios",
+ "Salmo 119:68": "Dios es bueno y hace el bien",
+ "Salmo 121": "Mi ayuda viene del Señor",
+ "Salmo 121:3-4": "El que me cuida no se duerme",
+ "Salmo 127:2": "Dios da el sueño a quienes ama",
+ "Salmo 131": "Tranquilo como un niño en brazos de su madre",
+ "Salmo 142": "Clamo al Señor en mi angustia",
+ "Salmo 1:2-3": "Meditar en la Palabra da fruto",
+ "Salmo 22": "El clamor de quien se siente abandonado",
+ "Salmo 23": "El Señor es mi pastor",
+ "Salmo 31": "En tus manos pongo mi vida",
+ "Salmo 32:3-5": "Al confesar mi pecado, Dios me perdonó",
+ "Salmo 37:8": "Deja el enojo; no te irrites",
+ "Salmo 39": "Lo breve de la vida; mi esperanza está en ti",
+ "Salmo 3:5-6": "Me acosté, dormí y desperté: Dios me sostuvo",
+ "Salmo 40": "Esperé en el Señor y me escuchó",
+ "Salmo 46:1": "Dios es mi amparo y fortaleza",
+ "Salmo 46:1-3": "Dios es refugio y fortaleza",
+ "Salmo 4:8": "En paz me acuesto y duermo",
+ "Salmo 55": "Echar la carga sobre el Señor",
+ "Salmo 56:3-4": "Cuando tengo miedo, confío en Dios",
+ "Salmo 6": "Clamor de alguien agotado de llorar",
+ "Salmo 62": "Solo en Dios descansa mi alma",
+ "Salmo 73": "Casi caigo por envidiar a los arrogantes",
+ "Salmo 88": "Oración desde la oscuridad",
+ "Santiago 1:14-15": "El deseo que se alimenta da a luz el pecado",
+ "Santiago 1:2-4": "Las pruebas producen paciencia",
+ "Santiago 4:13-15": "«Si el Señor quiere», no «yo haré»",
+ "Éxodo 16": "El maná que Dios daba cada día",
+ "Éxodo 20:9": "Seis días trabajarás",
+ "Éxodo 34:5-7": "Dios compasivo, lento para la ira"
+};
 
 const VERDADES_IDENTIDAD = [
   ['En Cristo soy una nueva criatura. Mi pasado influye, pero no me define.', '2 Corintios 5:17'],
@@ -726,7 +840,7 @@ function viewAjustes() {
   h += '<section class="panel"><h2>Privacidad</h2><p class="muted">' + (cloud.user ? PRIVACIDAD_NUBE : 'Lo que escribes queda guardado solo en este teléfono, dentro de la app. No se envía a ningún servidor. Tu consejero lo ve únicamente cuando tú se lo envías.' + (cloudDisponible() ? ' Si creas tu cuenta, también se guarda en internet.' : '')) + '</p></section>';
   h += '<section class="panel"><h2>Sobre este registro</h2><p class="muted">Sirve para renovar el entendimiento, reemplazando los pensamientos falsos por la verdad. Repítelo cada vez que el pensamiento vuelva: los caminos nuevos se fortalecen con la repetición.</p><div class="refs">' + refLinks('Romanos 12:2; 2 Corintios 10:5') + '</div></section>';
   h += '<button class="btn btn-ghost danger" data-action="wipe">Borrar todos los registros</button>';
-  h += '<p class="foot">Metanoia 2.2</p>';
+  h += '<p class="foot">Metanoia 2.3</p>';
   return h;
 }
 
@@ -778,7 +892,7 @@ function fieldTA(s, d, cls) {
 function themesHTML(d) {
   const have = new Set(splitRefs(d.citas).map(norm));
   return '<details class="themes-all"><summary>Buscar pasajes por tema</summary><div class="themes">' + TEMAS.map(([t, refs]) => '<details><summary>' + esc(t) + '</summary><div class="chips">' +
-    refs.map(r => '<button type="button" class="chip' + (have.has(norm(r)) ? ' on' : '') + '" data-action="add-ref" data-ref="' + esc(r) + '" aria-pressed="' + (have.has(norm(r)) ? 'true' : 'false') + '">' + esc(r) + '</button>').join('') +
+    refs.map(r => '<button type="button" class="chip pick' + (have.has(norm(r)) ? ' on' : '') + '" data-action="add-ref" data-ref="' + esc(r) + '" aria-pressed="' + (have.has(norm(r)) ? 'true' : 'false') + '"><span class="pick-ref">' + esc(r) + '</span>' + (RESUMEN[r] ? '<span class="pick-txt">' + esc(RESUMEN[r]) + '</span>' : '') + '</button>').join('') +
     '</div></details>').join('') + '</div></details>';
 }
 function stepFields(s, d) {
@@ -789,8 +903,7 @@ function stepFields(s, d) {
     return fieldTA(s, d) + '<p class="help-sm">Si el pensamiento es de no querer vivir o de hacerte daño, no lo guardes solo aquí. <button class="link" data-action="help">Ver ayuda urgente</button></p>';
   }
   if (s.n === 3) {
-    return '<label class="fld" for="f-citas"><span>Pasajes</span><input id="f-citas" type="text" data-field="citas" placeholder="Ej.: Romanos 8:1; 2 Corintios 5:17" value="' + esc(d.citas) + '" autocomplete="off"></label>' +
-      themesHTML(d) +
+    return themesHTML(d) + '<label class="fld" for="f-citas"><span>Pasajes</span><input id="f-citas" type="text" data-field="citas" placeholder="Ej.: Romanos 8:1; 2 Corintios 5:17" value="' + esc(d.citas) + '" autocomplete="off"></label>' +
       '<div id="read-links" class="read-links' + (splitRefs(d.citas).length ? '' : ' hidden') + '"><p class="read-h">' + ICON.book + '<span>Leer en la Biblia (toca cada pasaje)</span></p><div class="refs">' + refLinks(d.citas) + '</div></div>' +
       '<label class="fld" for="f-palabra"><span>Lo que dice</span></label>' + fieldTA(s, d).replace('<label class="sr-only" for="f-palabra">' + esc(s.title) + '</label>', '');
   }
