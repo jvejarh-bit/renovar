@@ -1012,18 +1012,22 @@ function viewAjustes() {
     '<label class="fld" for="s-b"><span>Abrir los pasajes en</span><select id="s-b" data-setting="biblia">' + [['app', 'La app Biblia (YouVersion)'], ['web', 'bible.com']].map(([v, l]) => '<option value="' + v + '"' + (settings.biblia === v ? ' selected' : '') + '>' + esc(l) + '</option>').join('') + '</select></label>' +
     '<label class="fld" for="s-v"><span>Versión de la Biblia</span><select id="s-v" data-setting="version">' + VERSIONES.map(([v, l]) => '<option value="' + v + '"' + (settings.version === v ? ' selected' : '') + '>' + esc(l) + '</option>').join('') + '</select></label>' +
     '<p class="help-sm">Se usa al abrir los pasajes en la app Biblia y en bible.com.</p></section>';
-  h += '<section class="panel"><h2>Copia de seguridad</h2><p class="muted">Tus registros se guardan solo en este teléfono. Si borras la app o cambias de teléfono, se pierden. Guarda una copia de vez en cuando (por ejemplo, en Archivos o enviándotela por correo).</p>' +
+  // Con cuenta, los registros ya están en la nube: la copia en archivo queda como algo opcional.
+  h += '<section class="panel"><h2>' + (cloud.user ? 'Copia en un archivo (opcional)' : 'Copia de seguridad') + '</h2><p class="muted">' +
+    (cloud.user ? 'Tus registros ya están guardados en la nube, así que no necesitas hacer copias. Si quieres, puedes guardar una en un archivo, o restaurar una copia antigua.'
+      : 'Tus registros se guardan solo en este teléfono. Si borras la app o cambias de teléfono, se pierden.' + (cloudDisponible() ? ' Para no perderlos, entra con tu cuenta (arriba) o guarda una copia de vez en cuando.' : ' Guarda una copia de vez en cuando (por ejemplo, en Archivos o enviándotela por correo).')) + '</p>' +
     '<div class="stack"><button class="btn btn-ghost" data-action="backup">Guardar copia de seguridad</button>' +
     '<label class="btn btn-ghost" for="restore-file">Restaurar desde una copia</label><input id="restore-file" class="sr-only" type="file" accept="application/json,.json"></div>' +
     '<p class="muted">' + (settings.lastBackup ? 'Última copia: ' + whenLabel(settings.lastBackup) + '.' : 'Todavía no has guardado una copia.') + ' ' + plural(entries.length, 'registro guardado', 'registros guardados') + '.</p></section>';
-  h += '<section class="panel" id="instalar"><h2>Instalar en tu teléfono</h2>' +
-    (standalone ? '<p class="muted">Ya la estás usando instalada como app.</p>' : '<p class="muted">En este navegador:</p><ol class="steps-ol">' + pasosInstalar(navegador()).map(x => '<li>' + x + '</li>').join('') + '</ol>') +
+  // Si ya está instalada, no hace falta mostrar cómo instalarla.
+  if (!standalone) h += '<section class="panel" id="instalar"><h2>Instalar en tu teléfono</h2>' +
+    '<p class="muted">En este navegador:</p><ol class="steps-ol">' + pasosInstalar(navegador()).map(x => '<li>' + x + '</li>').join('') + '</ol>' +
     '<p class="muted"><strong>iPhone</strong> (Safari, Chrome u otro): abre el enlace, toca Compartir y elige «Añadir a pantalla de inicio». Si no aparece, búscalo en «Ver más».</p>' +
     '<p class="muted"><strong>Android</strong> (Chrome, Samsung Internet u otro): abre el enlace, toca el menú (⋮ o ≡) y elige «Instalar app» o «Añadir a pantalla de inicio».</p></section>';
   h += '<section class="panel"><h2>Privacidad</h2><p class="muted">' + (cloud.user ? PRIVACIDAD_NUBE : 'Lo que escribes queda guardado solo en este teléfono, dentro de la app. No se envía a ningún servidor. Tu consejero lo ve únicamente cuando tú se lo envías.' + (cloudDisponible() ? ' Si creas tu cuenta, también se guarda en internet.' : '')) + '</p></section>';
   h += '<section class="panel"><h2>Sobre este registro</h2><p class="muted">Sirve para renovar el entendimiento, reemplazando los pensamientos falsos por la verdad. Repítelo cada vez que el pensamiento vuelva: los caminos nuevos se fortalecen con la repetición.</p><div class="refs">' + refLinks('Romanos 12:2; 2 Corintios 10:5') + '</div></section>';
   h += '<button class="btn btn-ghost danger" data-action="wipe">Borrar todos los registros</button>';
-  h += '<p class="foot">Metanoia 2.10</p>';
+  h += '<p class="foot">Metanoia 2.11</p>';
   return h;
 }
 
