@@ -1,6 +1,6 @@
 /* Metanoia: guarda la app en el teléfono para que funcione sin internet.
    Al cambiar algún archivo, sube el número de CACHE para que los teléfonos tomen la versión nueva. */
-const CACHE = 'renovar-v20';
+const CACHE = 'renovar-v21';
 const ASSETS = [
   './',
   './index.html',
