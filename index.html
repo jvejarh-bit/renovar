@@ -151,6 +151,15 @@ h1{font:700 30px/1.12 var(--font-ui);letter-spacing:-.015em;margin:0;text-wrap:b
 .flash{animation:flash .9s ease-out}
 
 /* verdades */
+.truth-groups{display:grid;gap:10px}
+.truth-group{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden}
+.truth-group > summary{list-style:none;cursor:pointer;padding:15px 16px;font-weight:600;font-size:17px;display:flex;align-items:center;gap:10px}
+.truth-group > summary::-webkit-details-marker{display:none}
+.truth-group > summary span:first-child{flex:1}
+.truth-group > summary .count{font:600 13px/1 var(--font-ui);color:var(--muted);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:4px 8px}
+.truth-group > summary::after{content:"+";color:var(--accent);font-size:20px;line-height:1}
+.truth-group[open] > summary::after{content:"–"}
+.truth-group .truths{border:0;border-top:1px solid var(--line);border-radius:0}
 .truths{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
 .truths > li{display:grid;gap:10px;padding:16px;border-left:4px solid var(--accent)}
 .truths > li + li{border-top:1px solid var(--line)}
@@ -314,94 +323,225 @@ const STEPS = [
 ];
 
 const TEMAS = [
-  ['Identidad en Cristo y vida nueva', ['2 Corintios 5:17', 'Romanos 6:2-14', 'Romanos 8:1', 'Romanos 8:15-17', '1 Corintios 6:11', 'Filipenses 1:6', '2 Corintios 4:16']],
-  ['Renovar la mente', ['Romanos 12:2', '2 Corintios 10:5', 'Filipenses 4:8', 'Salmo 1:2-3', 'Josué 1:8', 'Colosenses 2:8']],
-  ['Temor y ansiedad', ['Salmo 56:3-4', 'Filipenses 4:6-7', '1 Pedro 5:6-7', 'Mateo 6:25-34', 'Lucas 12:22-34', 'Salmo 46:1-3', 'Salmo 121', 'Isaías 26:3', '1 Juan 4:18']],
-  ['Temor al hombre', ['Proverbios 29:25', 'Isaías 51:7', 'Isaías 8:12-13', '1 Pedro 3:14-15', 'Hebreos 13:6', 'Gálatas 1:10', '2 Corintios 12:9-10']],
-  ['Soberanía y bondad de Dios', ['Salmo 119:68', 'Romanos 8:28-29', 'Romanos 8:31-39', 'Mateo 10:29-31', 'Lamentaciones 3:37-38', 'Génesis 50:20', 'Éxodo 34:5-7', 'Deuteronomio 29:29']],
-  ['Control y entrega', ['Lucas 22:42', 'Salmo 131', 'Proverbios 16:9', 'Proverbios 19:21', 'Santiago 4:13-15', 'Mateo 6:27', 'Mateo 11:28-30', '1 Corintios 3:6-7']],
-  ['El hoy y la provisión', ['Éxodo 16', 'Mateo 6:8', 'Mateo 6:34', 'Lamentaciones 3:22-23', 'Lucas 12:32', 'Hebreos 13:5']],
-  ['Culpa, confesión y perdón', ['Salmo 32:3-5', 'Isaías 1:18', '1 Juan 1:9', 'Lucas 7:36-50', 'Gálatas 2:16', 'Gálatas 3:13', 'Proverbios 28:1']],
-  ['Ira, rencor y perdón a otros', ['Salmo 37:8', 'Efesios 4:15', 'Efesios 4:25-27', 'Efesios 4:31-32', 'Eclesiastés 7:21-22', 'Lamentaciones 3:37', 'Romanos 8:31', 'Romanos 12:18-19', 'Mateo 5:23-24', 'Mateo 18:15', 'Mateo 18:23-33']],
-  ['Envidia y contentamiento', ['Proverbios 14:30', 'Salmo 73', 'Filipenses 2:3-4', 'Romanos 12:15', 'Hebreos 13:5']],
-  ['Pereza y responsabilidad', ['Génesis 4:6-7', 'Proverbios 24:30-34', 'Éxodo 20:9', 'Colosenses 3:23']],
-  ['Depresión y esperanza', ['Romanos 15:13', 'Salmo 119:68', 'Romanos 8:28-29', '1 Corintios 10:13', '1 Reyes 19:1-8']],
-  ['Sueño, descanso y pánico', ['Salmo 4:8', 'Salmo 3:5-6', 'Salmo 127:2', 'Salmo 121:3-4', 'Mateo 8:23-27', 'Marcos 6:31']],
-  ['Lamento y sufrimiento', ['Salmo 6', 'Salmo 22', 'Salmo 23', 'Salmo 31', 'Salmo 39', 'Salmo 40', 'Salmo 55', 'Salmo 62', 'Salmo 73', 'Salmo 88', 'Salmo 142', 'Santiago 1:2-4', '2 Corintios 4:16-18']],
-  ['Tentación y alivios rápidos', ['1 Corintios 10:13', 'Romanos 6:16', 'Santiago 1:14-15', 'Salmo 46:1']],
-  ['El cuerpo', ['1 Corintios 6:19-20', 'Romanos 12:1', '1 Reyes 19:1-8', 'Marcos 6:31']],
-  ['Amor y servicio', ['1 Juan 4:18', 'Filipenses 2:3-4', 'Marcos 10:42-45', 'Efesios 4:15']]
+  ["Identidad en Cristo y vida nueva", ["2 Corintios 5:17", "Romanos 6:2-14", "Romanos 8:1", "Romanos 8:15-17", "1 Corintios 6:11", "Filipenses 1:6", "2 Corintios 4:16", "Efesios 1:3-7", "Efesios 2:8-10", "2 Corintios 5:21", "Colosenses 3:1-4", "Juan 10:27-29"]],
+  ["Renovar la mente", ["Romanos 12:2", "2 Corintios 10:5", "Filipenses 4:8", "Salmo 1:2-3", "Josué 1:8", "Colosenses 2:8", "Colosenses 3:1-2", "Efesios 4:22-24", "Salmo 119:11"]],
+  ["La Palabra de Dios es suficiente", ["2 Timoteo 3:16-17", "2 Pedro 1:3", "Salmo 19:7-11", "Hebreos 4:12", "Salmo 119:105", "Juan 17:17"]],
+  ["Temor y ansiedad", ["Salmo 56:3-4", "Filipenses 4:6-7", "1 Pedro 5:6-7", "Mateo 6:25-34", "Lucas 12:22-34", "Salmo 46:1-3", "Salmo 121", "Isaías 26:3", "1 Juan 4:18", "Isaías 41:10", "Salmo 34:4", "Juan 14:27"]],
+  ["Temor al hombre", ["Proverbios 29:25", "Isaías 51:7", "Isaías 8:12-13", "1 Pedro 3:14-15", "Hebreos 13:6", "Gálatas 1:10", "2 Corintios 12:9-10", "Salmo 118:6", "1 Samuel 16:7", "Mateo 10:28"]],
+  ["Soberanía y bondad de Dios", ["Salmo 119:68", "Romanos 8:28-29", "Romanos 8:31-39", "Mateo 10:29-31", "Lamentaciones 3:37-38", "Génesis 50:20", "Éxodo 34:5-7", "Deuteronomio 29:29"]],
+  ["Confiar en Dios cuando la vida duele", ["Salmo 33:10-11", "Daniel 4:35", "Proverbios 21:1", "Isaías 55:8-9", "Romanos 11:33-36", "Lamentaciones 3:31-33", "Romanos 8:35-39", "Salmo 9:10", "Romanos 5:3-5", "2 Corintios 12:9"]],
+  ["Control y entrega", ["Lucas 22:42", "Salmo 131", "Proverbios 16:9", "Proverbios 19:21", "Santiago 4:13-15", "Mateo 6:27", "Mateo 11:28-30", "1 Corintios 3:6-7"]],
+  ["El hoy y la provisión", ["Éxodo 16", "Mateo 6:8", "Mateo 6:34", "Lamentaciones 3:22-23", "Lucas 12:32", "Hebreos 13:5"]],
+  ["Oración", ["Mateo 6:5-13", "Filipenses 4:6-7", "Hebreos 4:15-16", "Colosenses 4:2", "1 Juan 5:14-15", "Lucas 18:1-8"]],
+  ["Culpa, confesión y perdón", ["Salmo 32:3-5", "Isaías 1:18", "1 Juan 1:9", "Lucas 7:36-50", "Gálatas 2:16", "Gálatas 3:13", "Proverbios 28:1", "Salmo 51", "Salmo 103:10-12", "2 Corintios 7:10", "Miqueas 7:18-19", "Hebreos 10:12-14"]],
+  ["Ira, rencor y perdón a otros", ["Salmo 37:8", "Efesios 4:15", "Efesios 4:25-27", "Efesios 4:31-32", "Eclesiastés 7:21-22", "Lamentaciones 3:37", "Romanos 8:31", "Romanos 12:18-19", "Mateo 5:23-24", "Mateo 18:15", "Mateo 18:23-33", "Santiago 1:19-20", "Proverbios 15:1", "Proverbios 29:11", "Romanos 12:19-21", "Colosenses 3:13", "1 Pedro 3:9"]],
+  ["Conflictos y reconciliación", ["Santiago 4:1-3", "Mateo 7:3-5", "Mateo 18:15", "Mateo 5:23-24", "Romanos 12:18", "Proverbios 19:11", "Filipenses 2:1-4"]],
+  ["Palabras y comunicación", ["Efesios 4:29", "Efesios 4:25", "Santiago 3:2-10", "Proverbios 18:13", "Proverbios 12:18", "Proverbios 15:1", "Colosenses 4:6"]],
+  ["Matrimonio", ["Génesis 2:18-25", "Efesios 5:22-33", "Colosenses 3:18-19", "1 Pedro 3:1-7", "1 Corintios 13:4-8", "1 Corintios 7:3-5", "Proverbios 31:10-31"]],
+  ["Hijos y familia", ["Deuteronomio 6:5-7", "Efesios 6:1-4", "Colosenses 3:20-21", "Proverbios 22:6", "Proverbios 29:15", "Hebreos 12:5-11"]],
+  ["Envidia y contentamiento", ["Proverbios 14:30", "Salmo 73", "Filipenses 2:3-4", "Romanos 12:15", "Hebreos 13:5", "Filipenses 4:11-13", "1 Timoteo 6:6-10"]],
+  ["Orgullo y humildad", ["Santiago 4:6-10", "Proverbios 16:18", "Romanos 12:3", "Filipenses 2:5-8", "1 Pedro 5:5-6", "Miqueas 6:8", "Lucas 18:9-14"]],
+  ["Autocompasión y queja", ["Salmo 37:1-8", "Salmo 73", "Filipenses 2:14-15", "1 Tesalonicenses 5:16-18", "Salmo 103:1-5", "Números 11:1-6", "1 Reyes 19:9-18"]],
+  ["Gratitud y gozo", ["Filipenses 4:4", "1 Tesalonicenses 5:16-18", "Colosenses 3:15-17", "Habacuc 3:17-19", "Salmo 100", "Salmo 16:11"]],
+  ["Pereza y responsabilidad", ["Génesis 4:6-7", "Proverbios 24:30-34", "Proverbios 6:6-11", "Éxodo 20:9", "Colosenses 3:23", "Efesios 5:15-16", "2 Tesalonicenses 3:10-12"]],
+  ["Depresión y esperanza", ["Romanos 15:13", "Salmo 42", "Salmo 34:17-19", "Lamentaciones 3:19-26", "2 Corintios 4:8-9", "Salmo 62:5", "2 Corintios 1:3-4", "Salmo 119:68", "Romanos 8:28-29", "1 Corintios 10:13", "1 Reyes 19:1-8"]],
+  ["Sueño, descanso y pánico", ["Salmo 4:8", "Salmo 3:5-6", "Salmo 127:2", "Salmo 121:3-4", "Mateo 8:23-27", "Marcos 6:31"]],
+  ["Lamento y sufrimiento", ["Salmo 6", "Salmo 22", "Salmo 23", "Salmo 31", "Salmo 39", "Salmo 40", "Salmo 55", "Salmo 62", "Salmo 73", "Salmo 88", "Salmo 142", "Santiago 1:2-4", "2 Corintios 4:16-18"]],
+  ["Duelo y pérdida", ["Juan 11:25-26", "Juan 11:33-35", "1 Tesalonicenses 4:13-18", "Salmo 34:18", "2 Corintios 5:1-8", "Apocalipsis 21:3-4", "Salmo 90:12"]],
+  ["Soledad", ["Salmo 27:10", "Mateo 28:20", "Hebreos 13:5", "Salmo 68:6", "Eclesiastés 4:9-12", "Hebreos 10:24-25", "2 Timoteo 4:16-17"]],
+  ["Tentación y alivios rápidos", ["1 Corintios 10:13", "Romanos 6:16", "Santiago 1:14-15", "Salmo 46:1", "Hebreos 4:15-16", "Gálatas 5:16-17", "Romanos 13:12-14", "Mateo 26:41"]],
+  ["Pureza sexual", ["1 Tesalonicenses 4:3-5", "Mateo 5:27-30", "1 Corintios 6:18-20", "Job 31:1", "Salmo 119:9-11", "2 Timoteo 2:22", "Proverbios 5:15-23"]],
+  ["Adicciones y dominio propio", ["1 Corintios 6:12", "Efesios 5:18", "Proverbios 23:29-35", "Gálatas 5:22-23", "Tito 2:11-12", "1 Corintios 9:25-27", "Romanos 6:12-14"]],
+  ["Dinero y codicia", ["Lucas 12:15", "Mateo 6:19-21", "1 Timoteo 6:6-10", "Proverbios 30:8-9", "Proverbios 3:9-10", "Hebreos 13:5"]],
+  ["Cambiar hábitos: despojarse y vestirse", ["Efesios 4:22-24", "Efesios 4:25-32", "Colosenses 3:5-14", "Romanos 13:12-14", "Gálatas 5:16-25", "1 Timoteo 4:7-8", "Hebreos 5:14", "Filipenses 2:12-13"]],
+  ["El cuerpo", ["1 Corintios 6:19-20", "Romanos 12:1", "1 Reyes 19:1-8", "Marcos 6:31"]],
+  ["Amor y servicio", ["1 Juan 4:18", "Filipenses 2:3-4", "Marcos 10:42-45", "Efesios 4:15", "1 Corintios 13:4-8", "1 Juan 3:16-18", "Gálatas 5:13-14", "Juan 13:34-35"]]
 ];
 
 // Frase breve (resumen propio, no cita) para reconocer cada pasaje en la lista por tema
 const RESUMEN = {
  "1 Corintios 10:13": "Con la prueba, Dios da también la salida",
+ "1 Corintios 13:4-8": "El amor es paciente y bondadoso",
  "1 Corintios 3:6-7": "Uno planta, otro riega; Dios da el crecimiento",
  "1 Corintios 6:11": "Lavados, santificados y justificados",
+ "1 Corintios 6:12": "No dejarme dominar por nada",
+ "1 Corintios 6:18-20": "Huir de la inmoralidad; el cuerpo es de Dios",
  "1 Corintios 6:19-20": "El cuerpo es templo del Espíritu Santo",
+ "1 Corintios 7:3-5": "Cada cónyuge se debe al otro",
+ "1 Corintios 9:25-27": "Disciplinar el cuerpo como un atleta",
  "1 Juan 1:9": "Si confesamos, Él es fiel para perdonar",
+ "1 Juan 3:16-18": "Amar con hechos, no solo con palabras",
  "1 Juan 4:18": "El amor perfecto echa fuera el temor",
+ "1 Juan 5:14-15": "Dios oye lo que pedimos según su voluntad",
+ "1 Pedro 3:1-7": "Una conducta que gana; vivir con comprensión",
  "1 Pedro 3:14-15": "No temer; honrar a Cristo como Señor",
+ "1 Pedro 3:9": "Bendecir en vez de devolver mal por mal",
+ "1 Pedro 5:5-6": "Revestirse de humildad",
  "1 Pedro 5:6-7": "Echar toda la ansiedad sobre Él",
  "1 Reyes 19:1-8": "Elías agotado: Dios le da sueño y comida",
+ "1 Reyes 19:9-18": "Elías se siente solo; Dios lo levanta",
+ "1 Samuel 16:7": "La gente mira lo de afuera; Dios, el corazón",
+ "1 Tesalonicenses 4:13-18": "Tristes, pero no sin esperanza",
+ "1 Tesalonicenses 4:3-5": "La voluntad de Dios: una vida pura",
+ "1 Tesalonicenses 5:16-18": "Estar alegres, orar y dar gracias en todo",
+ "1 Timoteo 4:7-8": "Ejercitarse para la piedad",
+ "1 Timoteo 6:6-10": "La piedad con contentamiento es gran ganancia",
  "2 Corintios 10:5": "Llevar cautivo todo pensamiento a Cristo",
+ "2 Corintios 12:9": "Su gracia me basta",
  "2 Corintios 12:9-10": "Su poder se perfecciona en mi debilidad",
+ "2 Corintios 1:3-4": "El Dios de toda consolación",
  "2 Corintios 4:16": "Por dentro, Dios me renueva cada día",
  "2 Corintios 4:16-18": "Una aflicción breve, una gloria eterna",
+ "2 Corintios 4:8-9": "Atribulados, pero no aplastados",
+ "2 Corintios 5:1-8": "Nos espera una morada eterna",
  "2 Corintios 5:17": "En Cristo soy una nueva criatura",
+ "2 Corintios 5:21": "Cristo llevó mi pecado; yo recibo su justicia",
+ "2 Corintios 7:10": "La tristeza según Dios lleva al arrepentimiento",
+ "2 Pedro 1:3": "Dios nos dio todo para la vida y la piedad",
+ "2 Tesalonicenses 3:10-12": "Trabajar con tranquilidad y ganarse el pan",
+ "2 Timoteo 2:22": "Huir de las pasiones; seguir lo justo",
+ "2 Timoteo 3:16-17": "Toda la Escritura sirve para enseñar y corregir",
+ "2 Timoteo 4:16-17": "Todos me dejaron, pero el Señor estuvo conmigo",
+ "Apocalipsis 21:3-4": "Dios secará toda lágrima",
  "Colosenses 2:8": "Que nadie te engañe con ideas vacías",
+ "Colosenses 3:1-2": "Poner la mente en las cosas de arriba",
+ "Colosenses 3:1-4": "Mi vida está escondida con Cristo",
+ "Colosenses 3:13": "Perdonarse como el Señor nos perdonó",
+ "Colosenses 3:15-17": "La paz de Cristo y un corazón agradecido",
+ "Colosenses 3:18-19": "Esposos: amen y no sean ásperos",
+ "Colosenses 3:20-21": "No exasperar a los hijos",
  "Colosenses 3:23": "Trabajar de corazón, como para el Señor",
+ "Colosenses 3:5-14": "Hacer morir lo viejo; vestirse de amor",
+ "Colosenses 4:2": "Perseverar en oración con gratitud",
+ "Colosenses 4:6": "Hablar siempre con gracia",
+ "Daniel 4:35": "Nadie puede detener la mano de Dios",
  "Deuteronomio 29:29": "Lo secreto es de Dios; lo revelado, nuestro",
+ "Deuteronomio 6:5-7": "Enseñar a los hijos en lo cotidiano",
+ "Eclesiastés 4:9-12": "Mejor son dos que uno",
  "Eclesiastés 7:21-22": "Yo también he hablado mal de otros",
+ "Efesios 1:3-7": "Escogidos, adoptados y perdonados en Cristo",
+ "Efesios 2:8-10": "Salvos por gracia, creados para buenas obras",
  "Efesios 4:15": "Hablar la verdad con amor",
+ "Efesios 4:22-24": "Despojarse de lo viejo, vestirse de lo nuevo",
+ "Efesios 4:25": "Dejar la mentira y hablar verdad",
  "Efesios 4:25-27": "Que el enojo no dure hasta la noche",
+ "Efesios 4:25-32": "Cambiar mentira, enojo y robo por lo bueno",
+ "Efesios 4:29": "Palabras que edifiquen y hagan bien",
  "Efesios 4:31-32": "Perdonar como Dios nos perdonó en Cristo",
+ "Efesios 5:15-16": "Aprovechar bien el tiempo",
+ "Efesios 5:18": "No embriagarse; ser llenos del Espíritu",
+ "Efesios 5:22-33": "Amar como Cristo amó a la iglesia",
+ "Efesios 6:1-4": "Hijos que obedecen; padres que no provocan",
  "Filipenses 1:6": "Dios terminará la obra que comenzó en mí",
+ "Filipenses 2:1-4": "Unidos y humildes, mirando por los demás",
+ "Filipenses 2:12-13": "Dios produce en mí el querer y el hacer",
+ "Filipenses 2:14-15": "Hacer todo sin quejas ni discusiones",
  "Filipenses 2:3-4": "Considerar a los demás como superiores",
+ "Filipenses 2:5-8": "Cristo se humilló hasta la cruz",
+ "Filipenses 4:11-13": "Aprendí a estar contento en toda situación",
+ "Filipenses 4:4": "Alégrense siempre en el Señor",
  "Filipenses 4:6-7": "Orar en vez de afanarse; la paz de Dios",
  "Filipenses 4:8": "Pensar en lo verdadero, justo y puro",
  "Gálatas 1:10": "¿Agradar a la gente o a Dios?",
  "Gálatas 2:16": "Justificados por la fe en Cristo, no por obras",
  "Gálatas 3:13": "Cristo cargó nuestra maldición",
+ "Gálatas 5:13-14": "Servirse por amor unos a otros",
+ "Gálatas 5:16-17": "Andar en el Espíritu frente a la carne",
+ "Gálatas 5:16-25": "Las obras de la carne y el fruto del Espíritu",
+ "Gálatas 5:22-23": "El fruto del Espíritu incluye dominio propio",
+ "Génesis 2:18-25": "Dios diseñó el matrimonio: una sola carne",
  "Génesis 4:6-7": "Si haces lo bueno, podrás levantar el rostro",
  "Génesis 50:20": "Lo que fue para mal, Dios lo usó para bien",
+ "Habacuc 3:17-19": "Aunque falte todo, me alegraré en Dios",
+ "Hebreos 10:12-14": "Un solo sacrificio, válido para siempre",
+ "Hebreos 10:24-25": "Reunirnos y animarnos unos a otros",
+ "Hebreos 12:5-11": "Dios disciplina a los que ama",
  "Hebreos 13:5": "Dios no me dejará ni me abandonará",
  "Hebreos 13:6": "El Señor me ayuda; no temeré",
+ "Hebreos 4:12": "La Palabra penetra hasta el corazón",
+ "Hebreos 4:15-16": "Acercarnos con confianza al trono de la gracia",
+ "Hebreos 5:14": "La práctica entrena el discernimiento",
  "Isaías 1:18": "Pecados rojos, hechos blancos como la nieve",
  "Isaías 26:3": "Paz completa para quien confía en Dios",
+ "Isaías 41:10": "No temas: yo estoy contigo y te sostengo",
  "Isaías 51:7": "No temer las ofensas de la gente",
+ "Isaías 55:8-9": "Sus caminos son más altos que los míos",
  "Isaías 8:12-13": "Temer al Señor, no lo que otros temen",
+ "Job 31:1": "Un pacto con mis ojos",
  "Josué 1:8": "Meditar la Palabra de día y de noche",
+ "Juan 10:27-29": "Nadie me arrebata de la mano del Padre",
+ "Juan 11:25-26": "Jesús es la resurrección y la vida",
+ "Juan 11:33-35": "Jesús lloró junto a la tumba de su amigo",
+ "Juan 13:34-35": "Ámense como yo los he amado",
+ "Juan 14:27": "Jesús nos deja su paz",
+ "Juan 17:17": "Tu Palabra es la verdad",
+ "Lamentaciones 3:19-26": "Recordar su fidelidad devuelve la esperanza",
  "Lamentaciones 3:22-23": "Sus misericordias son nuevas cada mañana",
+ "Lamentaciones 3:31-33": "Dios no aflige por gusto; tiene compasión",
  "Lamentaciones 3:37": "Nada pasa sin que el Señor lo permita",
  "Lamentaciones 3:37-38": "Nada sucede sin que Dios lo permita",
+ "Lucas 12:15": "La vida no depende de lo que se posee",
  "Lucas 12:22-34": "Las aves y los lirios: Dios cuida",
  "Lucas 12:32": "Al Padre le agrada darnos el reino",
+ "Lucas 18:1-8": "Orar siempre y no desanimarse",
+ "Lucas 18:9-14": "El fariseo y el recaudador de impuestos",
  "Lucas 22:42": "Que no se haga mi voluntad, sino la tuya",
  "Lucas 7:36-50": "La mujer que mucho fue perdonada y mucho amó",
  "Marcos 10:42-45": "El que quiera ser grande, que sirva",
  "Marcos 6:31": "Vengan aparte a descansar un poco",
+ "Mateo 10:28": "Temer a Dios, no a quienes solo dañan el cuerpo",
  "Mateo 10:29-31": "Hasta mis cabellos están contados",
  "Mateo 11:28-30": "Vengan a mí y encontrarán descanso",
  "Mateo 18:15": "Hablar a solas con quien te ofendió",
  "Mateo 18:23-33": "El siervo perdonado que no quiso perdonar",
+ "Mateo 26:41": "Velar y orar para no caer",
+ "Mateo 28:20": "Jesús está con nosotros todos los días",
  "Mateo 5:23-24": "Reconcíliate primero con tu hermano",
+ "Mateo 5:27-30": "El adulterio empieza en el corazón",
+ "Mateo 6:19-21": "Guardar tesoros en el cielo",
  "Mateo 6:25-34": "No se preocupen: el Padre provee",
  "Mateo 6:27": "Afanarse no añade ni una hora de vida",
  "Mateo 6:34": "Cada día trae su propio afán",
+ "Mateo 6:5-13": "Jesús nos enseña a orar",
  "Mateo 6:8": "El Padre sabe lo que necesito",
+ "Mateo 7:3-5": "Sacar primero la viga de mi propio ojo",
  "Mateo 8:23-27": "Jesús calma la tormenta",
+ "Miqueas 6:8": "Justicia, misericordia y humildad ante Dios",
+ "Miqueas 7:18-19": "Dios arroja nuestros pecados al fondo del mar",
+ "Números 11:1-6": "Israel se queja del maná",
+ "Proverbios 12:18": "Palabras que hieren y palabras que sanan",
  "Proverbios 14:30": "La envidia carcome los huesos",
+ "Proverbios 15:1": "La respuesta suave calma el enojo",
+ "Proverbios 16:18": "El orgullo va antes de la caída",
  "Proverbios 16:9": "Yo hago planes, Dios dirige mis pasos",
+ "Proverbios 18:13": "Responder antes de escuchar es necedad",
+ "Proverbios 19:11": "Es una honra pasar por alto la ofensa",
  "Proverbios 19:21": "El propósito del Señor es el que permanece",
+ "Proverbios 21:1": "Dios guía hasta el corazón del rey",
+ "Proverbios 22:6": "Instruir al niño en su camino",
+ "Proverbios 23:29-35": "Las penas de quien se entrega al vino",
  "Proverbios 24:30-34": "El campo descuidado del perezoso",
  "Proverbios 28:1": "El culpable huye sin que nadie lo persiga",
+ "Proverbios 29:11": "El necio estalla; el sabio se contiene",
+ "Proverbios 29:15": "La corrección da sabiduría",
  "Proverbios 29:25": "El temor al hombre es una trampa",
+ "Proverbios 30:8-9": "Ni pobreza ni riqueza: el pan necesario",
+ "Proverbios 31:10-31": "La mujer que teme al Señor",
+ "Proverbios 3:9-10": "Honrar al Señor con los bienes",
+ "Proverbios 5:15-23": "Disfrutar del propio cónyuge",
+ "Proverbios 6:6-11": "Aprender de la hormiga",
+ "Romanos 11:33-36": "¡Qué profunda es la sabiduría de Dios!",
  "Romanos 12:1": "Presentar el cuerpo como sacrificio vivo",
  "Romanos 12:15": "Alegrarse con los que se alegran",
+ "Romanos 12:18": "En lo posible, vivir en paz con todos",
  "Romanos 12:18-19": "Vivir en paz; la venganza es de Dios",
+ "Romanos 12:19-21": "Vencer el mal con el bien",
  "Romanos 12:2": "Transformados al renovar la mente",
+ "Romanos 12:3": "No creerse más de lo que uno es",
+ "Romanos 13:12-14": "Vestirse de Cristo; no dar lugar a la carne",
  "Romanos 15:13": "El Dios de esperanza da gozo y paz",
+ "Romanos 5:3-5": "El sufrimiento produce paciencia y esperanza",
+ "Romanos 6:12-14": "Que el pecado no reine en tu cuerpo",
  "Romanos 6:16": "Somos esclavos de lo que obedecemos",
  "Romanos 6:2-14": "Muertos al pecado, vivos para Dios",
  "Romanos 8:1": "No hay condenación para los que están en Cristo",
@@ -409,53 +549,76 @@ const RESUMEN = {
  "Romanos 8:28-29": "Dios obra todo para bien de los suyos",
  "Romanos 8:31": "Si Dios está con nosotros, ¿quién contra nosotros?",
  "Romanos 8:31-39": "Nada nos separa del amor de Dios",
+ "Romanos 8:35-39": "Ninguna aflicción nos separa de su amor",
+ "Salmo 100": "Entrar a su presencia con gratitud",
+ "Salmo 103:1-5": "No olvidar ninguno de sus beneficios",
+ "Salmo 103:10-12": "Aleja mis pecados como el oriente del occidente",
+ "Salmo 118:6": "El Señor está conmigo; no temeré",
+ "Salmo 119:105": "Una lámpara para mis pies",
+ "Salmo 119:11": "Guardar la Palabra en el corazón para no pecar",
  "Salmo 119:68": "Dios es bueno y hace el bien",
+ "Salmo 119:9-11": "El joven guarda su camino con la Palabra",
  "Salmo 121": "Mi ayuda viene del Señor",
  "Salmo 121:3-4": "El que me cuida no se duerme",
  "Salmo 127:2": "Dios da el sueño a quienes ama",
  "Salmo 131": "Tranquilo como un niño en brazos de su madre",
  "Salmo 142": "Clamo al Señor en mi angustia",
+ "Salmo 16:11": "En su presencia hay plenitud de gozo",
+ "Salmo 19:7-11": "La Palabra del Señor restaura el alma",
  "Salmo 1:2-3": "Meditar en la Palabra da fruto",
  "Salmo 22": "El clamor de quien se siente abandonado",
  "Salmo 23": "El Señor es mi pastor",
+ "Salmo 27:10": "Aunque otros me dejen, el Señor me recibe",
  "Salmo 31": "En tus manos pongo mi vida",
  "Salmo 32:3-5": "Al confesar mi pecado, Dios me perdonó",
+ "Salmo 33:10-11": "Los planes del Señor permanecen para siempre",
+ "Salmo 34:17-19": "El Señor oye y libra al afligido",
+ "Salmo 34:18": "Cerca de los que tienen el corazón quebrantado",
+ "Salmo 34:4": "Busqué al Señor y me libró de mis temores",
+ "Salmo 37:1-8": "No te irrites; confía y espera en el Señor",
  "Salmo 37:8": "Deja el enojo; no te irrites",
  "Salmo 39": "Lo breve de la vida; mi esperanza está en ti",
  "Salmo 3:5-6": "Me acosté, dormí y desperté: Dios me sostuvo",
  "Salmo 40": "Esperé en el Señor y me escuchó",
+ "Salmo 42": "Hablarle al alma abatida: espera en Dios",
  "Salmo 46:1": "Dios es mi amparo y fortaleza",
  "Salmo 46:1-3": "Dios es refugio y fortaleza",
  "Salmo 4:8": "En paz me acuesto y duermo",
+ "Salmo 51": "La oración de David arrepentido",
  "Salmo 55": "Echar la carga sobre el Señor",
  "Salmo 56:3-4": "Cuando tengo miedo, confío en Dios",
  "Salmo 6": "Clamor de alguien agotado de llorar",
  "Salmo 62": "Solo en Dios descansa mi alma",
+ "Salmo 62:5": "Mi esperanza viene de Dios",
+ "Salmo 68:6": "Dios da un hogar al solitario",
  "Salmo 73": "Casi caigo por envidiar a los arrogantes",
  "Salmo 88": "Oración desde la oscuridad",
+ "Salmo 90:12": "Contar nuestros días con sabiduría",
+ "Salmo 9:10": "Dios no abandona a los que le buscan",
  "Santiago 1:14-15": "El deseo que se alimenta da a luz el pecado",
+ "Santiago 1:19-20": "Pronto para oír, lento para enojarse",
  "Santiago 1:2-4": "Las pruebas producen paciencia",
+ "Santiago 3:2-10": "La lengua es pequeña pero poderosa",
+ "Santiago 4:1-3": "Los pleitos nacen de deseos que luchan dentro",
  "Santiago 4:13-15": "«Si el Señor quiere», no «yo haré»",
+ "Santiago 4:6-10": "Dios da gracia a los humildes",
+ "Tito 2:11-12": "La gracia nos enseña a vivir con sobriedad",
  "Éxodo 16": "El maná que Dios daba cada día",
  "Éxodo 20:9": "Seis días trabajarás",
  "Éxodo 34:5-7": "Dios compasivo, lento para la ira"
 };
 
-const VERDADES_IDENTIDAD = [
-  ['En Cristo soy una nueva criatura. Mi pasado influye, pero no me define.', '2 Corintios 5:17'],
-  ['Mi pasado: no hay condenación para los que están en Cristo.', 'Romanos 8:1'],
-  ['Mi presente: Él me renueva día a día.', '2 Corintios 4:16'],
-  ['Mi futuro: el que comenzó la buena obra la perfeccionará.', 'Filipenses 1:6']
-];
-const VERDADES_PREOCUPACION = [
-  ['Dios gobierna todo, hasta lo más pequeño: ni un pajarito cae a tierra sin que el Padre lo permita.', 'Mateo 10:29-31'],
-  ['Dios es bueno y hace el bien, aunque hoy no lo entienda.', 'Salmo 119:68'],
-  ['Nadie puede frustrar sus planes para mi bien; Él obra en todo para hacerme semejante a Cristo.', 'Romanos 8:28-29, 31'],
-  ['Mi Padre sabe lo que necesito antes de que se lo pida.', 'Mateo 6:8, 32'],
-  ['Hoy tengo la gracia que necesito para hoy; mañana tendré la de mañana.', 'Lamentaciones 3:22-23; Mateo 6:34'],
-  ['No puedo añadir una hora a mi vida, pero sí puedo poner mi carga en sus manos.', 'Mateo 6:27; 1 Pedro 5:7'],
-  ['Él no me dejará ni me abandonará.', 'Hebreos 13:5'],
-  ['A mí me toca obedecer hoy; los resultados le pertenecen a Él.', 'Deuteronomio 29:29']
+// Verdades guía, agrupadas por situación (redactadas a partir de la guía y de los libros de consejería del consejero).
+const VERDADES_GRUPOS = [
+  ["Quién soy en Cristo", true, [["En Cristo soy una nueva criatura. Mi pasado influye, pero no me define.", "2 Corintios 5:17"], ["Mi pasado: no hay condenación para los que están en Cristo.", "Romanos 8:1"], ["Mi presente: Él me renueva día a día.", "2 Corintios 4:16"], ["Mi futuro: el que comenzó la buena obra la perfeccionará.", "Filipenses 1:6"], ["Fui perdonado por completo; Cristo pagó mi deuda con su sangre.", "Efesios 1:7"], ["No soy un esclavo con miedo: soy hijo de Dios y puedo llamarle Padre.", "Romanos 8:15-17"], ["Dios me ve vestido de la justicia de Cristo, no de mis fracasos.", "2 Corintios 5:21"], ["Tengo paz con Dios; ya no estoy bajo su enojo.", "Romanos 5:1"], ["No me pertenezco: fui comprado a gran precio, y eso le da valor a mi vida.", "1 Corintios 6:19-20"], ["Soy obra de Dios, creado en Cristo para el bien que Él preparó para mí.", "Efesios 2:10"], ["Mi vida está escondida con Cristo en Dios, y nadie puede arrebatarme de su mano.", "Colosenses 3:3; Juan 10:28-29"]]],
+  ["Cuando aparece la preocupación", false, [["Dios gobierna todo, hasta lo más pequeño: ni un pajarito cae a tierra sin que el Padre lo permita.", "Mateo 10:29-31"], ["Dios es bueno y hace el bien, aunque hoy no lo entienda.", "Salmo 119:68"], ["Nadie puede frustrar sus planes para mi bien; Él obra en todo para hacerme semejante a Cristo.", "Romanos 8:28-29, 31"], ["Mi Padre sabe lo que necesito antes de que se lo pida.", "Mateo 6:8, 32"], ["Hoy tengo la gracia que necesito para hoy; mañana tendré la de mañana.", "Lamentaciones 3:22-23; Mateo 6:34"], ["No puedo añadir una hora a mi vida, pero sí puedo poner mi carga en sus manos.", "Mateo 6:27; 1 Pedro 5:7"], ["Él no me dejará ni me abandonará.", "Hebreos 13:5"], ["A mí me toca obedecer hoy; los resultados le pertenecen a Él.", "Deuteronomio 29:29"], ["Puedo cambiar el afán por oración con gratitud, y su paz cuidará mi corazón y mi mente.", "Filipenses 4:6-7"], ["Cuando mi mente se apoya en Dios, Él la guarda en paz.", "Isaías 26:3"]]],
+  ["Cuando la vida duele", false, [["Dios es soberano: nada escapa de su mano, ni siquiera esto.", "Salmo 33:10-11; Daniel 4:35"], ["Dios es sabio: sus caminos son más altos que los míos, aunque hoy no los entienda.", "Isaías 55:8-9; Romanos 11:33"], ["Dios es amor: no me aflige porque le guste, sino que tiene compasión de mí.", "Lamentaciones 3:32-33"], ["Ninguna aflicción puede separarme del amor de Cristo.", "Romanos 8:35-39"], ["Su gracia me basta; su poder se muestra en mi debilidad.", "2 Corintios 12:9"], ["Dios usa lo que sufro para formar en mí paciencia, carácter y esperanza.", "Romanos 5:3-5"], ["El Señor está cerca de los que tienen el corazón quebrantado.", "Salmo 34:18"], ["Esta aflicción es pasajera comparada con la gloria que viene.", "2 Corintios 4:17-18"], ["Puedo confiar en Él: nunca abandona a los que le buscan.", "Salmo 9:10"]]],
+  ["Cuando estoy desanimado", false, [["Puedo hablarle a mi propia alma y decirle: espera en Dios, todavía le alabaré.", "Salmo 42:5"], ["Cuando traigo a la memoria su fidelidad, vuelve la esperanza.", "Lamentaciones 3:21-23"], ["Estoy atribulado, pero no aplastado; confundido, pero no sin esperanza.", "2 Corintios 4:8-9"], ["Puedo dejar de mirar solo mi corazón y pensar en la bondad de Dios y en el amor de Cristo.", "Filipenses 4:8; Efesios 3:17-19"], ["No olvidaré sus beneficios: Él perdona, sana, rescata y me rodea de amor.", "Salmo 103:2-5"], ["Aunque hoy no lo sienta cerca, puedo recordar lo que Él ya hizo.", "Salmo 77:11-12"], ["Echo mi carga sobre el Señor, y Él me sostendrá.", "Salmo 55:22"], ["Mi esperanza no depende de mí, sino del Dios de esperanza.", "Romanos 15:13"], ["Dar gracias en todo, aun cuando cuesta, es la voluntad de Dios para mí.", "1 Tesalonicenses 5:18"]]],
+  ["Cuando me siento culpable", false, [["Si confieso mi pecado, Dios es fiel y justo para perdonarme y limpiarme.", "1 Juan 1:9"], ["Esconder el pecado me desgasta; confesarlo trae alivio.", "Salmo 32:3-5"], ["Dios aleja mis pecados tan lejos como el oriente del occidente.", "Salmo 103:12"], ["Cristo ya pagó por completo; no tengo que pagar castigándome a mí mismo.", "Hebreos 10:12-14; 1 Pedro 2:24"], ["Puedo acercarme con confianza al trono de la gracia, aun cuando he fallado.", "Hebreos 4:15-16"], ["La tristeza que viene de Dios me lleva a arrepentirme, no a desesperarme.", "2 Corintios 7:10"], ["Si alguien sufrió por mi pecado, puedo pedirle perdón y buscar la reconciliación.", "Mateo 5:23-24"]]],
+  ["Cuando me enojo o me hieren", false, [["Puedo ser rápido para escuchar y lento para enojarme.", "Santiago 1:19-20"], ["No dejaré que el enojo dure hasta la noche ni le daré lugar al diablo.", "Efesios 4:26-27"], ["Fui perdonado de mucho; por eso puedo perdonar.", "Efesios 4:32; Colosenses 3:13"], ["La venganza le pertenece a Dios; yo puedo vencer el mal con el bien.", "Romanos 12:19-21"], ["Una respuesta suave calma el enojo; una palabra dura lo enciende.", "Proverbios 15:1"], ["Puedo usar mis palabras para resolver el problema y edificar, no para herir.", "Efesios 4:29"], ["Dios me llama a bendecir en lugar de devolver insulto por insulto.", "1 Pedro 3:9"], ["Detrás de mi enojo hay deseos; puedo preguntarme qué estoy queriendo tanto.", "Santiago 4:1-3"]]],
+  ["Cuando temo lo que piensen de mí", false, [["Temer a la gente es una trampa; confiar en el Señor me pone a salvo.", "Proverbios 29:25"], ["Vivo para agradar a Cristo, no para ganar la aprobación de todos.", "Gálatas 1:10"], ["El Señor está conmigo; ¿qué me puede hacer una persona?", "Salmo 118:6; Hebreos 13:6"], ["La gente mira lo de afuera; Dios mira el corazón.", "1 Samuel 16:7"], ["En vez de pensar en mí, puedo pensar en cómo amar y servir al otro.", "Filipenses 2:3-4; 1 Juan 4:18"], ["Dios ya me aceptó en Cristo; mi valor no depende de la opinión de nadie.", "Efesios 1:3-6"]]],
+  ["Cuando viene la tentación", false, [["Lo que enfrento es común; Dios es fiel y me dará la salida.", "1 Corintios 10:13"], ["El pecado ya no es mi amo: estoy bajo la gracia.", "Romanos 6:14"], ["Jesús fue tentado como yo y me entiende; puedo pedirle ayuda en el momento.", "Hebreos 4:15-16"], ["Si me dejo guiar por el Espíritu, no cumpliré los deseos de la carne.", "Gálatas 5:16"], ["Guardar la Palabra en mi corazón me ayuda a no pecar.", "Salmo 119:11"], ["El deseo alimentado da a luz el pecado; puedo cortarlo a tiempo.", "Santiago 1:14-15"], ["Huir también es obedecer: puedo alejarme de lo que me hace caer.", "2 Timoteo 2:22; Mateo 5:29-30"]]],
+  ["Para seguir cambiando", false, [["El cambio tiene dos partes: dejar lo viejo y ponerme lo nuevo.", "Efesios 4:22-24"], ["Dios me ha dado todo lo que necesito para vivir como a Él le agrada.", "2 Pedro 1:3"], ["Dios produce en mí el querer y el hacer; por eso me esfuerzo.", "Filipenses 2:12-13"], ["No vivo según lo que siento, sino según lo que Dios dice.", "Juan 14:15; Lucas 6:46"], ["Si no me canso de hacer el bien, a su tiempo cosecharé.", "Gálatas 6:9"], ["Los hábitos se forman con práctica; puedo ejercitarme para la piedad.", "1 Timoteo 4:7-8; Hebreos 5:14"], ["Su Palabra es verdad y es suficiente para mí.", "2 Timoteo 3:16-17; Juan 17:17"]]]
 ];
 
 const EJEMPLO = {
@@ -735,12 +898,20 @@ function truthList(items, cls) {
   return '<ul class="truths ' + (cls || '') + '">' + items.map(([t, r]) => '<li><p class="truth">' + esc(t) + '</p><div class="truth-meta"><div class="refs">' + refLinks(r) + '</div></div></li>').join('') + '</ul>';
 }
 
+// Recuerda qué grupos de verdades dejó abiertos la persona, para que no se cierren al volver a dibujar.
+const truthOpen = new Set(); truthOpen.touched = false;
+document.addEventListener('toggle', ev => {
+  const d = ev.target; if (!d.classList || !d.classList.contains('truth-group')) return;
+  if (!truthOpen.touched) VERDADES_GRUPOS.forEach((g, j) => { if (g[1]) truthOpen.add(j); });
+  truthOpen.touched = true; const i = +d.dataset.grupo;
+  if (d.open) truthOpen.add(i); else truthOpen.delete(i);
+}, true);
 function viewVerdades() {
   const seen = new Set();
   const mine = entries.filter(e => e.verdad && e.verdad.trim())
     .sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)))
     .filter(e => { const k = norm(e.verdad).replace(/\W+/g, ' ').trim(); if (seen.has(k)) return false; seen.add(k); return true; });
-  let h = '<header class="top"><p class="eyebrow">Metanoia · tarjeta de verdades</p><h1>Verdades para repetir</h1><p class="lead">Léelas apenas vuelva el pensamiento. Las primeras son las que tú escribiste.</p></header>';
+  let h = '<header class="top"><p class="eyebrow">Metanoia · tarjeta de verdades</p><h1>Verdades para repetir</h1><p class="lead">Léelas apenas vuelva el pensamiento. Las primeras son las que tú escribiste; abajo hay más, ordenadas por situación.</p></header>';
   h += '<section><h2 class="sec-h">De mis registros</h2>';
   if (mine.length) {
     h += '<ul class="truths">' + mine.map(e => '<li><p class="truth">' + nl(e.verdad) + '</p><div class="truth-meta">' + (e.citas ? '<div class="refs">' + refLinks(e.citas) + '</div>' : '') + '<button class="link" data-action="open" data-id="' + esc(e.id) + '">Ver registro</button></div></li>').join('') + '</ul>';
@@ -748,8 +919,8 @@ function viewVerdades() {
     h += '<p class="panel muted">Aquí aparecerán las verdades que escribas en el paso 4 de cada registro.</p>';
   }
   h += '</section>';
-  h += '<section><h2 class="sec-h">Quién soy en Cristo</h2>' + truthList(VERDADES_IDENTIDAD, 'guide') + '</section>';
-  h += '<section><h2 class="sec-h">Cuando aparece la preocupación</h2>' + truthList(VERDADES_PREOCUPACION, 'guide') + '</section>';
+  h += '<section><h2 class="sec-h">Verdades por situación</h2><div class="truth-groups">' + VERDADES_GRUPOS.map(([t, abierto, items], i) =>
+    '<details class="truth-group" data-grupo="' + i + '"' + ((truthOpen.has(i) || (abierto && !truthOpen.touched)) ? ' open' : '') + '><summary><span>' + esc(t) + '</span><span class="count">' + items.length + '</span></summary>' + truthList(items, 'guide') + '</details>').join('') + '</div></section>';
   return h;
 }
 
@@ -840,7 +1011,7 @@ function viewAjustes() {
   h += '<section class="panel"><h2>Privacidad</h2><p class="muted">' + (cloud.user ? PRIVACIDAD_NUBE : 'Lo que escribes queda guardado solo en este teléfono, dentro de la app. No se envía a ningún servidor. Tu consejero lo ve únicamente cuando tú se lo envías.' + (cloudDisponible() ? ' Si creas tu cuenta, también se guarda en internet.' : '')) + '</p></section>';
   h += '<section class="panel"><h2>Sobre este registro</h2><p class="muted">Sirve para renovar el entendimiento, reemplazando los pensamientos falsos por la verdad. Repítelo cada vez que el pensamiento vuelva: los caminos nuevos se fortalecen con la repetición.</p><div class="refs">' + refLinks('Romanos 12:2; 2 Corintios 10:5') + '</div></section>';
   h += '<button class="btn btn-ghost danger" data-action="wipe">Borrar todos los registros</button>';
-  h += '<p class="foot">Metanoia 2.3</p>';
+  h += '<p class="foot">Metanoia 2.4</p>';
   return h;
 }
 
